@@ -6,7 +6,6 @@ class Tileset{
        this.mapHeight = mapHeight;
        this.tileWidth = tileWidth;
 	   this.tileHeight = tileHeight;
-	   
    }
 }
 
@@ -27,19 +26,39 @@ class CollectionTileset extends Tileset{
 		this.columns =0;
 		this.tileList= new Array(tile);
 	}
-	updateTileSize(image){
-		//this.tileWidth = largest;
-		//this.tileHeight = largest;
-	// update tileWidth, tileHeight
+
+	updateTileSize(Theight, Twidth){
+		var maxWidth = this.tileWidth;   
+		var maxHeight = this.tileHeight;  
+		 
+		if(Twidth > maxWidth || Theight > maxHeight){
+		   if(Twidth > maxWidth){
+			  maxWidth = Twidth;
+		   }
+		   if(Theight > maxHeight){
+			  maxHeight = Theight;
+		   }
+		}
+			this.tileWidth = maxWidth;
+			this.tileHeight = maxHeight;
+			console.log("update "+ this.tileHeight + this.tileWidth);
 	}
-	addSingleTile(src, imgW, imgH){
+
+	addCollectionTile(src, imgW, imgH){
 		var tile;
 		tile = new Tile(src, imgW, imgH);
 		this.tileList.push(tile);
 	}
-	removeSingleTile(){
+
+	removeCollectionTile(){
 		// this.tileList.push(newLayer);
 	}
+}
+
+function createCollectionTileSet(){
+  var collectionName = document.getElementById("TilesetName").value;
+  //var newLayer = new TiledLayer(0, "Layer1", mapWidth, mapHeight, mapName, tileWidth, tileHeight);
+  closeWindow(createTileSetWindow);
 }
 
 class SingleImageTileset extends Tileset{
@@ -49,15 +68,36 @@ class SingleImageTileset extends Tileset{
 		this.margin = margin;
 		this.spacing = spacing;
 		this.columns = columns;
-		this.tiles = createSingleTiles(image, tileWidth, tileHeight);
+		this.tiles = createSingleTiles(image, tileWidth, tileHeight, margin, spacing);
 	}
 }
 
-function createSingleTiles(image, tileWidth, tileHeight){
-	// image size
-	//
-	return new Array();
-	}
+
+// function createSingleTiles(image, tileWidth, tileHeight, margin, spacing){
+// 	var i;
+// 	var tile;
+// 	var xPos =0;
+// 	var yPos =0;
+// 	var tiles =[];
+// 	var col = Math.floor(loadImg.width / (tileWidth+spacing));
+// 	var row = Math.floor(loadImg.height / (tileHeight+spacing));
+// 	console.log("colrow "+ col + row);
+	
+// 	for(i = 0;i < col * row ;i++){
+//         tile = {};
+//         tile.tw = tileWidth;
+//         tile.th = tileHeight;
+//         tiles.push(tile);
+//         xPos += tileWidth+spacing;
+//         if(xPos >= loadImg.width){
+//             xPos = 0;
+//             yPos += tileHeight+spacing;
+//         }
+//     }
+
+// 	return tiles;
+// 	}
+
 	// function showTileset(){
 	 
 	// }

@@ -1,6 +1,10 @@
-<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%--References I used:
+ - Bootstrap template info below
+ - https://hellokoding.com/registration-and-login-example-with-spring-security-spring-boot-spring-data-jpa-hsql-jsp/
+--%>
+
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<c:set var="contextPath" value="${pageContext.request.contextPath}"/>
+
 <link href="css/myProfile.css" rel="stylesheet">
 
 <!DOCTYPE html>
@@ -39,6 +43,7 @@
         <a href="/home">Workspace</a>
         <a href="/my-profile">Profile</a>
         <a href="/my-projects">My Projects</a>
+        <a href="/my-tilesets">My Tilesets</a>
         <a href="/logout">Logout</a>
 
     </div>

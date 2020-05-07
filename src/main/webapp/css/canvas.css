@@ -1,0 +1,21 @@
+canvas {
+    border: 1px solid black; 
+    position:absolute;
+    left:0px;
+    top:0px;
+    background-color: transparent;
+}
+
+.visible-btn {
+    float: right;
+  }
+  .fa {
+    font-size: 15px;
+    cursor: pointer;
+    user-select: none;
+    color : whitesmoke;
+    float: right;
+  }
+  .fa:hover {
+    color : white;
+  }

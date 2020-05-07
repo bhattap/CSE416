@@ -3,6 +3,7 @@
 <!DOCTYPE html>spring
 <!-- <script src="//code.jquery.com/jquery-1.11.1.min.js"></script> -->
 <link href="css/workSpace.css" rel="stylesheet">
+<link href="css/canvas.css" rel="stylesheet">
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <link href="js/bootstrap.min.js" rel="text/javascript">
 <!-- <link href="js/Map.js" rel="text/javascript"> -->
@@ -20,8 +21,8 @@
 </head>
 
 <body>
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+  <script src="https://kit.fontawesome.com/48f90dece2.js" crossorigin="anonymous"></script>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" /> -->
   <div class="whole_workspace">
     <section id="side-bar">
       <a id="toggle-home">
@@ -43,7 +44,7 @@
 
     </section>
     <section class="app">
-      <div class="menu">
+      <div class="menu" style="z-index : 1000;">
           <div class="dropdown">
               <button class="dropbtn">File</button>
               <div class="dropdown-content">
@@ -53,8 +54,8 @@
                 <a href="#" onclick="createload()">Load</a>
                 <a href="#" onclick="save()">Save</a>
                 <a href="#" onclick="openSaveAs()">Save As </a>
-                <a href="#" onclick ="exportMap()">Export</a>
-                <a href="#">Export As</a>
+                <a href="#" onclick ="exportMap()">Export Map</a>
+                <a href="#" onclick ="openExportAs()">Export As Map</a>
                 <a href="#">Export As Image</a>
                 <a href="#">Delete</a>
                 <a href="#">Recent Files</a>
@@ -84,6 +85,7 @@
                     <a href="#"onclick="moveLayerDown()">Lower Layers</a>
                     <a href="#">Show/Hide Layers</a>
                     <a href="#">Lock/Unlock Layers</a>
+                    <a href="#"onclick="showHideGird()">Show/Hide Grid</a>
                   </div>
                 </div>
                 <div class="dropdown">
@@ -125,10 +127,8 @@
                     class="fa fa-search-plus"></i></div>
               </div>
               <div class="surface editor-border">
-                <div class = "Layer1">
-                  <!-- <script type="text/javascript" src="js/tilemap.js"></script> -->
-                </div>
-                <div class = "Layer2">
+                <div class = "Map">
+                  <div class = "Grid"></div>
                 </div>
               </div>
             </div>
@@ -228,7 +228,7 @@
           <div class="input-header">Image </div> 
           <!-- <label for="fname">Source:</label>
           <input type="text" id="fname" name="fname"> -->
-          <input type="file" id="myFile"> 
+          <input type="file" id="myFile"  multiple accept="image/*"> 
 
           <div class="input-row">
             <label for="tileSet-width">Width :</label>
@@ -244,7 +244,7 @@
           </div>
           <div class="window-actions">
               <div class="surface btn" onclick="cancelCreateTileSet()">Cancel</div>
-              <div class="surface btn" onclick="createSingleTileSet()">OK</div>
+              <div class="surface btn" onclick="newTabBtn2()">OK</div>
               <!-- <div class="surface btn" onclick="openTileSet(event, 'singleIMG')">OK</div> -->
             </div>
           </div>
@@ -266,9 +266,23 @@
           </div>
           <div class="window-actions">
             <div class="surface btn" onclick="cancelSaveAs()">Cancel</div>
-            <div class="surface btn" onclick="saveAs()">OK</div> 
+            <div class="surface btn" onclick="saveAsMap()">OK</div> 
           </div>
       </div>
+
+      <div class="window surface" id="exportas">
+        <div class="window-title-bar">
+          <h4>Save As</h4>
+          <div class="surface btn" onclick="cancelExportAs()"><i class="fa fa-close"></i></div>
+          <div class="newline"></div>
+          <label for="exportAsName">File Name :</label>
+            <input type="text" placeholder="name" id="exportAsName"/>
+        </div>
+        <div class="window-actions">
+          <div class="surface btn" onclick="cancelExportAs()">Cancel</div>
+          <div class="surface btn" onclick="exportAsMap()">OK</div> 
+        </div>
+    </div>
 
       <div class="window surface" id="loadFile">
           <div class="window-title-bar">
@@ -339,15 +353,15 @@ class Editor{
     this.loadedMapList = new Array();
     this.loadedTilesetList = new Array();
     this.userName;
+    this.grid;
+    this.selectedLayerId;
+
    }
+   //$("canvas").detach(); remove all canvas
    
-   loadMap(map){
-      this.currentMap = map;
-      this.loadedMapList.push(map);
-   }
    loadTileset(tileset){
-      this.loadedTilesetList.push(tileset);
-      this.currentTileset = tileset;
+     this.loadedTilesetList.push(tileset);
+     this.currentTileset = tileset;
    }
    closeMap(){
       
@@ -355,22 +369,31 @@ class Editor{
    loadTileset(){
       
    }
+   clearWorkspace(){
+    var layerList = this.currentMap.LayerList;
+    layerList.forEach(function(layer){
+    var layerCanvas = layer.canvasLayer.canvas;
+      document.getElementsByClassName('Map')[0].removeChild(layerCanvas);
+    });
+  }
+ 
 }
 
 window.onload = (event) => {
-   editor = new Editor();
-   editor.userName = '${username}';
-   console.log("create editor class");
-   };
+  editor = new Editor();
+  editor.userName = '${username}';
+  console.log("create editor class");
+};
 
 </script>
 <script type="text/javascript" src="js/Map.js"></script>
-<script type="text/javascript" src="js/tilemap.js"></script>
-<script type="text/javascript" src="js/exprot.js"></script>
-<script type="text/javascript" src="js/file.js"></script>
-<script type="text/javascript" src="js/npm.js"></script>
 <script type="text/javascript" src="js/Tileset.js"></script>
+<script type="text/javascript" src="js/tilemap.js"></script>
+<script type="text/javascript" src="js/export.js"></script>
+<!-- <script type="text/javascript" src="js/file.js"></script> -->
+<!-- <script type="text/javascript" src="js/npm.js"></script> -->
 <script type="text/javascript" src="js/FileSaver.js"></script>
+<script type="text/javascript" src="js/file.js"></script>
 
 </body>
 </html>

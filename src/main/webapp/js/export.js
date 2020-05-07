@@ -1,10 +1,33 @@
+let exportasWindow = document.querySelector("#exportas");
+function openExportAs() {  
+    showWindow(exportasWindow);
+}
+    
+function cancelExportAs() {  
+    closeWindow(exportasWindow);
+}
+    
+function exportMap(filename = editor.currentMap.id){
+    var map = editor.currentMap;
+    if(map){
+        var xmlFile = MapXML(map);
+        // open document chooser
+        createMapXMLFile(xmlFile, filename);
+    } else{
+        alert("There is no map to export");
+    }
+}
+
+function exportAsMap(){
+    var fileName = document.getElementById("exportAsName").value;
+    exportMap(fileName);
+}
 
 function createMapXMLFile(xmlFile, name) {
     var xml = new XMLSerializer().serializeToString(xmlFile);
     var blob = new Blob([xml], {type: "text/xml;charset=utf-8"});
     saveAs(blob, name+".tmx");
-  }
-
+}
 
 function MapXML(map)
   {
@@ -13,7 +36,7 @@ function MapXML(map)
       var mapElem = doc.createElement("map");
       mapElem.setAttribute("version", "1.2");
       mapElem.setAttribute("tiledversion", "1.3.2");
-      mapElem.setAttribute("orientation", "isometric");
+      mapElem.setAttribute("orientation", "orthogonal");
       mapElem.setAttribute("renderoreder", "right-down");
       mapElem.setAttribute("compressionlevel", "-1");
       mapElem.setAttribute("width", map.mapWidth);
