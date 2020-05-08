@@ -26,12 +26,12 @@
   <div class="whole_workspace">
     <section id="side-bar">
       <a id="toggle-home">
-        <img src="img/home.svg" tooltip = "toggle-home" flow = "right">
+        <button id="homeButton"><i class="fa fa-home" tooltip = "toggle-home" flow = "right"></i></button>
       </a>
       <div class ="vertical-align">
         <ul id="tool-menu">
           <li data ="view" id="tool-view">
-            <img src="img/tool/view.png">
+            <button id="gridVisability"><i class="fa fa-eye" aria-hidden="true"></i></button>
             <!-- <span class="tooltiptext">Control view</span> -->
           </li>
           <li data ="history" id="tool-history">
@@ -85,7 +85,7 @@
                     <a href="#"onclick="moveLayerDown()">Lower Layers</a>
                     <a href="#">Show/Hide Layers</a>
                     <a href="#">Lock/Unlock Layers</a>
-                    <a href="#"onclick="showHideGird()">Show/Hide Grid</a>
+                    <!-- <a href="#"onclick="showHideGird()">Show/Hide Grid</a> -->
                   </div>
                 </div>
                 <div class="dropdown">
@@ -229,16 +229,12 @@
           <!-- <label for="fname">Source:</label>
           <input type="text" id="fname" name="fname"> -->
           <input type="file" id="myFile"  multiple accept="image/*"> 
-
+          <div class="newline"></div>
           <div class="input-row">
             <label for="tileSet-width">Width :</label>
             <input type="text" placeholder="eg. 32" id="tileSet-width"/>
             <label for="tileSet-height">Height:</label>
             <input type="text" placeholder="eg. 32" id="tileSet-height"/>
-          </div>
-          <div class="input-row">
-            <label for="margin">Margin :</label>
-            <input type="text" placeholder="eg. 32" id="margin"/>
             <label for="spacing">Spacing:</label>
             <input type="text" placeholder="eg. 32" id="spacing"/>
           </div>
@@ -313,7 +309,7 @@
           </div>
       </div>
 
-      <div class="window surface" id="create-layer-window">
+      <div class="window surface" id="create-layer-window" style="z-index : 1000;">
           <div class="window-title-bar">
             <h4>New Layer</h4>
             <div class="surface btn" onclick="cancelCreateLayer()"><i class="fa fa-close"></i></div>
@@ -324,12 +320,12 @@
             <div class="input-row">
               <!-- <input class="map-perspective" id="tile-layer" name="layer-obj" type="radio" value="tile-layer" checked="checked"/> -->
               <!-- <label for="tile-layer">Tile Layer</label> -->
-              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="tile-layer">tile layer<br>
+              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="tileLayer">tile layer<br>
               
             </div>
             <div class="input-row">
               <!-- <input class="map-perspective" id="object-layer" name="layer-obj" value="object-layer" type="radio"/> -->
-              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="object-layer">object layer<br>
+              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="objectLayer">object layer<br>
               <!-- <label for="object-layer">Object Layer</label> -->
             </div>
             <div class="input-row">
@@ -343,7 +339,7 @@
           </div>
         </div>
 <script>
-var editor;
+let editor;
 
 class Editor{
    constructor(){
@@ -363,12 +359,11 @@ class Editor{
      this.loadedTilesetList.push(tileset);
      this.currentTileset = tileset;
    }
+
    closeMap(){
       
    }
-   loadTileset(){
-      
-   }
+   
    clearWorkspace(){
     var layerList = this.currentMap.LayerList;
     layerList.forEach(function(layer){
@@ -376,7 +371,6 @@ class Editor{
       document.getElementsByClassName('Map')[0].removeChild(layerCanvas);
     });
   }
- 
 }
 
 window.onload = (event) => {
@@ -390,7 +384,6 @@ window.onload = (event) => {
 <script type="text/javascript" src="js/Tileset.js"></script>
 <script type="text/javascript" src="js/tilemap.js"></script>
 <script type="text/javascript" src="js/export.js"></script>
-<!-- <script type="text/javascript" src="js/file.js"></script> -->
 <!-- <script type="text/javascript" src="js/npm.js"></script> -->
 <script type="text/javascript" src="js/FileSaver.js"></script>
 <script type="text/javascript" src="js/file.js"></script>

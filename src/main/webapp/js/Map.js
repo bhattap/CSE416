@@ -8,13 +8,15 @@ class TiledMap{
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.LayerList = new Map();
+        this.nextgid = 1;
+        this.selectedTilesetList = new Array();
     }
 
     addLayer(layerType, name){
         var newLayer;
         var id = idL + 1;
         console.log("idL "+ idL + "id: " +id);
-        if (layerType === "tile-layer"){ 
+        if (layerType === "tileLayer"){ 
           newLayer = new TiledLayer(id, name, this.mapWidth, this.mapHeight, this.id, this.tileWidth, this.tileHeight);
          
         } else {
@@ -61,8 +63,6 @@ class TiledMap{
         }
     }
 }
-
-
 
 function createNewLayer(layerType, name) {
 	var currentMap = editor.currentMap;
@@ -183,24 +183,42 @@ class TiledLayer extends Layer{
         this.tileH = tileH;
         this.csv = Array.from(Array((width)), () => Array((height)).fill(0));
         this.type = "TiledLayer";
-        this.canvasLayer = new Canvas(width, height, tileW, tileH, this);
+        this.canvasLayer = new TiledCanvas(width, height, tileW, tileH, this);
     }
 
     fillTiles(x, y, canvas){
         // this.canvasLayer.canvas.getContext("2d").fillStyle = "#FF9896";
-        //this.canvasLayer.canvas.getContext("2d").fillRect(this.tileW*x, this.tileH*y, this.tileW, this.tileH);
-        var img = document.getElementById(currentTileID);
-        this.canvasLayer.canvas.getContext("2d").drawImage(img, this.tileW*x, this.tileH*y);
+        // this.canvasLayer.canvas.getContext("2d").fillRect(this.tileW*x, this.tileH*y, this.tileW, this.tileH);
+        // After clicking collection of Images ->
+        // var img = document.getElementById(currentTileID);
+        // this.canvasLayer.canvas.getContext("2d").drawImage(img, this.tileW*x, this.tileH*y);
+        // var imgTo = ctxT.getImageData(tileList[index].xPos, tileList[index].yPos, tileList[index].tw, tileList[index].th)
+        //this.canvasLayer.canvas.getContext("2d").putImageData(imgToDraw, this.tileW*x, this.tileH*y);
+        tileList = editor.currentTileset.tileList;
+        var imgg = new Image();
+        // console.log("fill "+editor.currentTileset.tileList[index].src );
+        imgg.src = editor.currentTileset.tileList[index].src;
+        this.canvasLayer.canvas.getContext("2d").drawImage(imgg,tileList[index].startX, tileList[index].startY,tileList[index].tileWidth, tileList[index].tileHeight, this.tileW*x, this.tileH*y, tileList[index].tileWidth, tileList[index].tileHeight );
         this.csv[x][y] = 1;
     }
-
 }
 
 class ObjectLayer extends Layer{
     constructor(id, name, width, height, mapName){
-        super(id, name, width, height);
+        super(id, name, width, height, mapName);
         this.objects = new Array(); // insert the MapObject later
         this.type = "ObjectLayer";
+        this.canvasW = document.getElementsByClassName("editor-container")[0].clientWidth;
+        this.canvasH = document.getElementsByClassName("editor-container")[0].clientHeight;
+        this.canvasLayer = new ObjectCanvas(this.canvasW, this.canvasH, this);
+    }
+    fillObject(x, y){
+        // this.canvasLayer.canvas.getContext("2d").fillStyle = "#FF9896";
+        // this.canvasLayer.canvas.getContext("2d").fillRect(this.tileW*x, this.tileH*y, this.tileW, this.tileH);
+        // var img = document.getElementById(currentTileID);
+        var img = new Image(64, 64);
+        img.src = 'gemRedStroked.png';
+        this.canvasLayer.canvas.getContext("2d").drawImage(img, x, y);
     }
 }
 

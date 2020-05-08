@@ -82,9 +82,11 @@ function loadMap(map){
     showList(editor.currentMap.LayerList);
 }
 
-function showHideGird(){
+var gridVisIcon = document.getElementById("gridVisability");
+gridVisIcon.addEventListener("click", function(){
   editor.grid.showOrHide();
-}
+});
+
 
 function createMap() {
   let mapType = "top";
@@ -99,7 +101,7 @@ function createMap() {
   var newMap = new TiledMap(mapName, mapWidth, mapHeight, tileWidth, tileHeight);
   newMap.LayerList.set(0, newLayer);
 
-  saveAll(newMap, newMap.LayerList, mapName);
+  saveAll_Map(newMap, newMap.LayerList, mapName);
   
   // loadAll(newMap.id);
 
@@ -121,13 +123,19 @@ function createLayer() {
       }
     } 
     document.getElementById("input-layer").value = "";
-    // console.log(layerType);
-    // console.log(layerName);
+    console.log(layerType);
+    console.log(layerName);
 
   closeWindow(createLayerWindow);
   //showList(layerType, layerName);
   createNewLayer(layerType, layerName);
   
+}
+
+function createTileSet(name, image, imgWidth, imgHeight, tileWidth, tileHeight, spacing, columns, tilecount){
+  var newTileset = new SingleImageTileset(name, image, imgWidth, imgHeight, tileWidth, tileHeight, spacing, columns, tilecount);
+  editor.loadTileset(newTileset);
+  saveAll_Tileset(newTileset);
 }
 
 var currentTileSetName;
@@ -142,6 +150,7 @@ function newTabBtn() {
   var workspace = document.createElement("div");
   workspace.setAttribute('class', 'tilesetContent');
   workspace.setAttribute('id', tilesetName);
+  workspace.setAttribute('style', 'max-height: 220px; max-width:560px; overflow: scroll;');
   document.getElementById("tilesetWorkspace").appendChild(workspace);
 
   currentTileSetName = tilesetName;
@@ -151,14 +160,18 @@ function newTabBtn() {
 
   var single = 1;
   var singlecanvas;
+  var imgSource;
+  var tileList;
+  var tilesetH;
+  var tilesetW;
+  var spacing;
+  var getCanvas;
 
   function newTabBtn2() {
     var tilesetName = document.getElementById("TilesetName").value;
-    // var imageFile = document.getElementById("myFile").value;
-    var tilesetH = document.getElementById("tileSet-height").value;
-    var tilesetW = document.getElementById("tileSet-width").value;
-    // var margin = document.getElementById("margin").value;
-    // var spacing = document.getElementById("spacing").value;
+    tilesetH = Number(document.getElementById("tileSet-height").value);
+    tilesetW = Number(document.getElementById("tileSet-width").value);
+    spacing = Number(document.getElementById("spacing").value);
     var btn = document.createElement("BUTTON");
     btn.setAttribute('class', 'tab-header2');
     btn.innerHTML = tilesetName;
@@ -168,6 +181,7 @@ function newTabBtn() {
     workspace.setAttribute('class', 'tilesetContent');
     workspace.setAttribute('id', tilesetName);
     document.getElementById("tilesetWorkspace").appendChild(workspace);
+    
   
     currentTileSetName = tilesetName;
     singlecanvas =currentTileSetName +single;
@@ -180,18 +194,45 @@ function newTabBtn() {
   document.getElementById("newTab").addEventListener("click", function(e) {
     currentTileSetName = e.target.innerHTML;
     openTilesetTab(e, e.target.innerHTML); 
+    // singlecanvas = currentTileSetName+"1";
+    // imgSource = document.getElementById(singlecanvas).toDataURL(); 
+    // loadImg.src = imgSource;
+    editor.currentTileset = getTileset(currentTileSetName);
+    // canvasT = document.getElementById(currentTileSetName+"1");
+    getCanvas = document.getElementById(currentTileSetName+"1");
+    tilesetH = editor.currentTileset.tileList[0].tileHeight;
+    tilesetW = editor.currentTileset.tileList[0].tileWidth;
   });
+
+  function getTileset(tabName){
+    var tileSet;
+    var tilesetList = editor.loadedTilesetList;
+    for(var i=0; i<tilesetList.length; i++){
+      if(tilesetList[i].name == tabName){
+        tileSet = tilesetList[i];
+      }
+    }
+    return tileSet;
+  }
 
   var loadImg;
   var canvasT
      function createSingleTileset(){
-     
       canvasT = document.createElement("canvas");
       canvasT.setAttribute('id', singlecanvas); 
       canvasT2 = document.createElement("canvas");
       canvasT2.setAttribute('id', singlecanvas+"2"); 
       document.getElementById(currentTileSetName).appendChild(canvasT);
       document.getElementById(currentTileSetName).appendChild(canvasT2);
+      getCanvas = document.getElementById(currentTileSetName+"1");
+
+      getCanvas.addEventListener('click', function(event) {
+        var mousePos = getMousePos(getCanvas, event);
+        var row = Math.floor(mousePos.x/tilesetW);
+        var col = Math.floor(mousePos.y/tilesetH);
+        index = getIndex(col, row);
+        console.log("index "+index +" img "+currentTileSetName);
+    });
       
        var oFReader = new FileReader();
        oFReader.readAsDataURL(document.getElementById("myFile").files[0]);
@@ -200,12 +241,10 @@ function newTabBtn() {
          loadImg = new Image();
          loadImg.src = oFREvent.target.result;
          
-       loadImg.addEventListener('load',loadImgage,false);
+       loadImg.addEventListener('load',loadImage,false);
          };
      }
-   
-   var tileInputWidth;
-   var tileInputHeight;
+
    var colT;
    var rowT;
    var totalWidth;
@@ -213,21 +252,17 @@ function newTabBtn() {
    var tilesetCanvas;
    var tilesetCanvas2;
    var ctxT;
-   var tilelistToCopy;
 
-   function loadImgage(e){
-     tileInputHeight = Number(document.getElementById("tileSet-height").value);
-     tileInputWidth = Number(document.getElementById("tileSet-width").value);
-     var margin = Number(document.getElementById("margin").value);
-     var spacing = Number(document.getElementById("spacing").value);
-     colT = Math.floor(loadImg.width / (tileInputWidth+spacing));
-     rowT = Math.floor(loadImg.height / (tileInputHeight+spacing));
-     totalWidth = tileInputWidth * colT;
-     totalHeight = tileInputHeight * rowT;
- 
+   function loadImage(e){
+     colT = Math.floor(loadImg.width / (tilesetW+spacing));
+     rowT = Math.floor(loadImg.height / (tilesetH+spacing));
+     totalWidth = tilesetW * colT;
+     totalHeight = tilesetH * rowT;
+     var tilecount = colT * rowT; 
     tilesetCanvas = document.getElementById(singlecanvas);
     tilesetCanvas2 = document.getElementById(singlecanvas+"2");
-    //console.log("canvas size "+totalWidth+totalHeight);
+    // imgSource = document.getElementById(singlecanvas).toDataURL();    
+     imgSource = loadImg.src;
      ctxT = tilesetCanvas.getContext('2d');
      ctxTbase = tilesetCanvas2.getContext('2d');
      tilesetCanvas.width = totalWidth;
@@ -235,46 +270,12 @@ function newTabBtn() {
      tilesetCanvas2.width = loadImg.width;
      tilesetCanvas2.height = loadImg.height;
      tilesetCanvas.style.border = "1px solid black";
+     createTileSet(currentTileSetName, imgSource, loadImg.width, loadImg.height, tilesetW, tilesetH, spacing, colT, tilecount);
      ctxTbase.drawImage(loadImg, 0, 0, loadImg.width, loadImg.height, 0, 0, loadImg.width, loadImg.height);
-     tilelistToCopy = createSingleTiles(loadImg, tileInputWidth, tileInputHeight, margin, spacing);
+     tileList = createSingleTiles(currentTileSetName, imgSource, tilesetW, tilesetH, spacing);
+    //  tileList = editor.currentTileset.createSingleTiles(currentTileSetName, imgSource, tilesetW, tilesetH, spacing);
     drawTile();
     }
-  
-    var tileList;
-    function createSingleTiles(image, tileWidth, tileHeight, margin, spacing){
-      var tile;
-      var xPos =0;
-      var yPos =0;
-      var limit;
-      tileList =[];
-      var plus = tileWidth+ spacing;
-      var plusH = tileHeight +spacing;
-      
-      for(var i = 0;i < colT * rowT; i++){
-            tile = {};
-            tile.xPos = xPos;
-            tile.yPos = yPos;
-            tile.tw = tileWidth;
-            tile.th = tileHeight;
-            tileList.push(tile);
-            xPos += plus;
-            limit = loadImg.width-tile.tw;
-
-            if(totalWidth !=loadImg.width){
-              if(xPos >= limit){
-                xPos = 0;
-                yPos += plusH;
-              }
-            }
-            else{
-              if(xPos >= loadImg.width){
-                xPos = 0;
-                yPos += plusH;
-              }
-            }
-      }
-        return tileList;
-      }
 
 var index;
       function drawTile(){
@@ -284,9 +285,9 @@ var index;
         var imgGet;
         for(var i = 0;i < tileList.length;i++){
             tile = tileList[i];
-          //  console.log("print "+tile.xPos +" "+ tile.yPos +" start "+ startXPos +" "+ startYPos);
             imgGet = ctxTbase.getImageData(tile.xPos, tile.yPos, tile.tw, tile.th);
             ctxT.putImageData(imgGet, startXPos, startYPos);
+            // ctxT.drawImage(loadImg, tile.startX, tile.startY, tile.tileWidth, tile.tileHeight, startXPos, startYPos, tile.tileWidth, tile.tileHeight);
             ctxT.strokeRect(startXPos, startYPos, tile.tw, tile.th);
             startXPos += tile.tw;
               if(startXPos >= totalWidth){
@@ -296,15 +297,6 @@ var index;
             }
         var list = document.getElementById(currentTileSetName);
         list.removeChild(list.childNodes[1]);
-        canvasT.addEventListener('click', function(event) {
-          var mousePos = getMousePos(canvasT, event);
-          var row = Math.floor(mousePos.x/tile.tw);
-          var col = Math.floor(mousePos.y/tile.th);
-          var message = 'Mouse clicked: ' + row  + ',' + col;
-          console.log(message);
-          index = getIndex(col, row);
-          console.log("index "+index);
-      });
     }
 
     function getIndex(col, row){
@@ -341,15 +333,19 @@ var index;
   }
   document.getElementById("defaultOpen").click();
 
+function saveAll_Tileset(newTileset){
+  let jsonTileset = getTilesetJSON(newTileset);
+  saveDataToDB(jsonTileset, "save_tileset");
+}
 
-function saveAll(newMap, newLayers, mapName){
-  var jsonMap = getMapJSON(newMap, mapName);
-  var jsonLayers = getLayerJSON(newLayers);
+function saveAll_Map(newMap, newLayers, mapName){
+  let jsonMap = getMapJSON(newMap, mapName);
+  let jsonLayers = getLayerJSON(newLayers);
   console.log(jsonMap);
 
-  let saveMapResult = saveMap(jsonMap);
-  let saveLayerResult = saveLayer(jsonLayers["layers"]);
-  let saveLayerPropResult = saveLayerProp(jsonLayers["layerProps"]);
+  let saveMapResult = saveDataToDB(jsonMap, "save_map");
+  let saveLayerResult = saveDataToDB(jsonLayers["layers"], "save_layer");
+  let saveLayerPropResult = saveDataToDB(jsonLayers["layerProps"], "save_layerProp");
 
   //$.when(saveMapResult, saveLayerResult, saveLayerPropResult).then(function(){
     // loadAll(newMap.id)
@@ -368,7 +364,7 @@ function saveAsMap(){
     alert("There is no map to save");
   } else{
     var saveAsName = document.getElementById("saveAsName").value;
-    saveAll(map, map.LayerList, saveAsName);
+    saveAll_Map(map, map.LayerList, saveAsName);
   }
   closeWindow(saveasWindow);
 }
@@ -378,7 +374,7 @@ function save(){
   if (map == null){
     alert("There is no map to save");
   } else{
-    saveAll(map, map.LayerList, map.id);
+    saveAll_Map(map, map.LayerList, map.id);
   }
 }
 
@@ -398,17 +394,6 @@ function loadFile(){
     loadMap(newMap);
   });
 
-  // $.when(loadResult).then(function(){
-  //   var jsonData = loadResult;
-  //   console.log(jsonData);
-  //     var map = parseMapJson(jsonData.map);
-  //     console.log(map);
-  //     var layers = parseLayerJson(jsonData.layers, map.mapWidth, map.mapHeight, map.tileWidth, map.tileHeight);
-  //     console.log(layers);
-  //     map.LayerList = layers;
-  //     // var layerProps = parseLayerPropJson(jsonData.layerProps, layers);
-  //     editor.loadMap(map);
-  // });
   closeWindow(loadWindow);
 }
 
@@ -445,7 +430,6 @@ function removeFile() {
     };
 
   document.getElementById(currentTileSetName).appendChild(img);
-
   document.getElementById(currentTileSetName).addEventListener('click', function (e) {
      console.log("clickedIMG "+ e.target.id);
     // console.log("clicked-src "+ e.target.src);
@@ -515,40 +499,26 @@ function mySelect() {
   document.getElementById("order").value = "You ordered a coffee with: " + txt;
 }
     
-    // function openTileSet(evt, tilesetName) {
-    //   var i, tileSetcontent, tablinks;
-    //   tileSetcontent = document.getElementsByClassName("tileSetcontent");
-    //   for (i = 0; i < tileSetcontent.length; i++) {
-    //     tileSetcontent[i].style.display = "none";
-    //   }
-    //   tablinks = document.getElementsByClassName("tab-header2");
-    //   for (i = 0; i < tablinks.length; i++) {
-    //     tablinks[i].className = tablinks[i].className.replace(" active", "");
-    //   }
-    //   document.getElementById(tilesetName).style.display = "block";
-    //   evt.currentTarget.className += " active";
-    //   closeWindow(createTileSetWindow);
-    // }
-
-    function parseMapJson(map){
-      return new TiledMap(map.name, map.width, map.height, map.tilewidth, map.tileheight);
-    }
+function parseMapJson(map){
+  return new TiledMap(map.name, map.width, map.height, map.tilewidth, map.tileheight);
+}
     
-    function parseLayerJson(layers, map){
-      var layerList = new Map();
-      layers.forEach(function(layer){
-        var layerData = layer;
-        var newLayer;
-        if (layerData.type === "TiledLayer"){ 
-          newLayer = new TiledLayer(layerData.id, layerData.name, map.mapWidth, map.mapHeight, map.id, map.tileWidth, map.tileHeight);
-        } else {
-          newLayer = new ObjectLayer(layerData.id, layerData.name, map.mapWidth, map.mapHeight);
-        }
-        newLayer.order = layerData.orderInMap;
-        layerList.set(layerList.size, newLayer);
-      });
-      return layerList;
-    }
+function parseLayerJson(layers, map){
+  var layerList = new Map();
+  layers.forEach(function(layer){
+  var layerData = layer;
+  var newLayer;
+  if (layerData.type === "TiledLayer"){ 
+    newLayer = new TiledLayer(layerData.id, layerData.name, map.mapWidth, map.mapHeight, map.id, map.tileWidth, map.tileHeight);
+  } else {
+    newLayer = new ObjectLayer(layerData.id, layerData.name, map.mapWidth, map.mapHeight);
+  }
+    newLayer.csv = convertCSVToArray(layer.csv, Array(map.mapWidth), map.mapHeight);
+    newLayer.order = layerData.orderInMap;
+    layerList.set(layerList.size, newLayer);
+  });
+  return layerList;
+}
 
 function getMapJSON(mapData, mapName){
   console.log(editor.userName);
@@ -565,10 +535,35 @@ function getMapJSON(mapData, mapName){
   }
 }
 
+function convertArrayToCSV(csvArray, csv = ""){
+  csvArray.forEach(function(rowArray) {
+    let rowText = rowArray.join(",");
+    csv += rowText + "\n";
+});
+  csv.replace("undefined", "");
+  return csv;
+}
+
+function convertCSVToArray(csv, csvArray, size){
+  let result = new Array();
+  csvArray = csv.split("\n", size);
+  csvArray.forEach(function(rowText){
+    let rowArray = new Array(size);
+    // each row in rowArray
+    // 1. turns into String (like "0,0,0,0,0,0,0")
+    rowArray = rowText.split(',');
+    // 2. turns into integers
+    rowArray = rowArray.map(num => parseInt(num, 10));
+    // 3. push to the return variable
+    result.push(rowArray);
+  });
+  return result;
+}
+
 function getLayerJSON(LayerData){
   let layers = [];
   let layerProps = [];
-  
+
   LayerData.forEach(function(layer){
     console.log(layer);
     layers.push({
@@ -576,7 +571,8 @@ function getLayerJSON(LayerData){
       "name" : layer.name,
       "mapName" : layer.mapName,
       "orderInMap" : layer.order,
-      "type" : layer.type
+      "type" : layer.type,
+      "csv" : convertArrayToCSV(layer.csv)
     });
     
     let layerPropData = layer.layerProp;
@@ -595,56 +591,29 @@ function getLayerJSON(LayerData){
 
   return {"layers" : layers, "layerProps" : layerProps};
 }
-  // var helper = new XMLSerializer();
-  //helper.serializeToString(mapXML)
 
-
-function saveMap(map){
-  var save_endpoint = "save_map";
-    return $.ajax({
-      type : "POST",
-      contentType: "application/json",
-      url : "/fileController/" + save_endpoint,
-      data : JSON.stringify(map),
-      dataType : 'json',
-      processData: false, 
-      
-      error : function(error){
-        return error;
-      },
-      success : function(data) {
-        console.log(data);
-        return data;
-      }
-    });
-}
-function saveLayer(layer){
-  var save_endpoint = "save_layer";
-    return $.ajax({
-      type : "POST",
-      contentType: "application/json",
-      url : "/fileController/" + save_endpoint,
-      data : JSON.stringify(layer),
-      dataType : 'json',
-      processData: false,
-    
-      error : function(error){
-        return error;
-      },
-      success : function(data) {
-        console.log(data);
-        return data;
-      }
-  });
+function getTilesetJSON(tileset){
+  return {
+    "ownedBy" : editor.userName,
+    "name" : tileset.name,
+    "spacing" : tileset.spacing,
+    "margin" : tileset.margin,
+    "imagewidth" : tileset.imgWidth,
+    "imageheight" : tileset.imgHeight,
+    "columns" : tileset.columns,
+    "counts" : tileset.tilecount,
+    "tilewidth" : tileset.tileWidth,
+    "tileheight" : tileset.tileHeight
+  }
 }
 
-function saveLayerProp(layerProp){
-  var save_endpoint = "save_layerProp";
+
+function saveDataToDB(savingData, save_endpoint){
     return $.ajax({
       type : "POST",
       contentType: "application/json",
       url : "/fileController/" + save_endpoint,
-      data : JSON.stringify(layerProp),
+      data : JSON.stringify(savingData),
       dataType : 'json',
       processData: false, 
     
@@ -658,27 +627,6 @@ function saveLayerProp(layerProp){
 });
 }
 
-// function loadAll(mapName){
-//   var load_endpoint = "load_map";
-//   // var helper = new XMLSerializer();
-//     return $.ajax({
-//       type : "POST",
-//       url : "/fileController/" + load_endpoint,
-//       data : JSON.stringify({"mapName" : mapName}),
-//       contentType: "application/json",
-//       dataType : 'json',
-//       processData: false, 
-      
-//       error : function(error){
-//         alert("load error occurred");
-//         console.log("XML Loading Failed");
-//       },
-
-//       success : function(data) {
-//         console.log(data);
-//         console.log("load success!");
-//       }
-// });
 function loadAll(mapName){
   var load_endpoint = "load_map";
   return new Promise((resolve, reject) => {
@@ -705,125 +653,3 @@ function loadAll(mapName){
     });
 });
 }
-
-// function save(mapXML){
-// $.ajax({
-//       type : "POST",
-//       contentType: "application/xml",
-//       url : "/fileController/save_map",
-//       data : JSON.stringify({
-//             "type" : "FeatureCollection",
-//             "features" : []
-//          }),
-//       dataType : 'json',
-   
-//       success : function(data) {
-
-//       console.log("success load");
-//       }
-
-//    });
-// }
-
-// function createLayerGroup() {
-//   var li = document.createElement("li");
-//   //var inputValue = document.getElementById("myInput").value;
-//   var inputValue ="Group";
-//   var t = document.createTextNode(inputValue);
-//   li.appendChild(t);
-//   if (inputValue === '') {
-//     alert("You must write something!");
-//   } else {
-//     document.getElementById("myUL").appendChild(li);
-//   }
-//    document.getElementById("myInput").value = "";
-
-//   var span = document.createElement("SPAN");
-
-//   li.appendChild(span);
-
-//   for (i = 0; i < close.length; i++) {
-//     close[i].onclick = function() {
-//       var div = this.parentElement;
-//       div.style.display = "none";
-//     }
-//   }
-// } 
-
-// function createLayer() {
-//   var li = document.createElement("li");
-//   //var inputValue = document.getElementById("myInput").value;
-//   var inputValue ="Layer";
-//  // <i class="fa fa-files-o"></i>
-//   var t = document.createTextNode(inputValue);
-//   li.appendChild(t);
-//   if (inputValue === '') {
-//     alert("You must write something!");
-//   } else {
-//     document.getElementById("myUL").appendChild(li);
-//   }
-//    document.getElementById("myInput").value = "";
-
-//   var span = document.createElement("SPAN");
-//   var txt = document.createTextNode("\u00D7");
-
-//   li.appendChild(span);
-
-//   for (i = 0; i < close.length; i++) {
-//     close[i].onclick = function() {
-//       var div = this.parentElement;
-//       div.style.display = "none";
-//     }
-//   }
-// } 
-
-// function createTileGroup() {
-//   var lis = document.createElement("li");
-//   //var inputValue = document.getElementById("myInput").value;
-//   var inputValue ="Group";
-//   var t = document.createTextNode(inputValue);
-//   lis.appendChild(t);
-//   if (inputValue === '') {
-//     alert("You must write something!");
-//   } else {
-//     document.getElementById("myUL").appendChild(lis);
-//   }
-//    document.getElementById("myInput").value = "";
-
-//   var span = document.createElement("SPAN");
-
-//   lis.appendChild(span);
-
-//   for (i = 0; i < close.length; i++) {
-//     close[i].onclick = function() {
-//       var div = this.parentElement;
-//       div.style.display = "none";
-//     }
-//   }
-// } 
-// function createTile() {
-//   var lis = document.createElement("li");
-//   //var inputValue = document.getElementById("myInput").value;
-//   var inputValue ="Layer";
-//  // <i class="fa fa-files-o"></i>
-//   var t = document.createTextNode(inputValue);
-//   lis.appendChild(t);
-//   if (inputValue === '') {
-//     alert("You must write something!");
-//   } else {
-//     document.getElementById("myUL").appendChild(lis);
-//   }
-//    document.getElementById("myInput").value = "";
-
-//   var span = document.createElement("SPAN");
-//   var txt = document.createTextNode("\u00D7");
-
-//   lis.appendChild(span);
-
-//   for (i = 0; i < close.length; i++) {
-//     close[i].onclick = function() {
-//       var div = this.parentElement;
-//       div.style.display = "none";
-//     }
-//   }
-// } 

@@ -72,7 +72,7 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-secondary"><a href="">Download</a></button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary"><a href="/share-tileset?tilesetId=${tileset.id}">Share</a></button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary"><a href="/share-tileset?tilesetName=${tileset.name}&ownedBy=${tileset.ownedBy}">Share</a></button>
                     </div>
 <%--                    <small class="text-muted">9 mins</small>--%>
                   </div>
@@ -105,7 +105,7 @@
                           <div class="d-flex justify-content-between align-items-center">
                               <div class="btn-group">
                                   <button type="button" class="btn btn-sm btn-outline-secondary"><a href="">Download</a></button>
-                                  <button type="button" class="btn btn-sm btn-outline-secondary"><a href="/share-tileset?tilesetId=${tileset.id}">Share</a></button>
+                                  <button type="button" class="btn btn-sm btn-outline-secondary"><a href="/share-tileset?tilesetName=${tileset.name}&ownedBy=${tileset.ownedBy}">Share</a></button>
                               </div>
                                   <%--                    <small class="text-muted">9 mins</small>--%>
                           </div>
