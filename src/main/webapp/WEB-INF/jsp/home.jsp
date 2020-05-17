@@ -25,7 +25,7 @@
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" /> -->
   <div class="whole_workspace">
     <section id="side-bar">
-      <a id="toggle-home">
+      <a href="/my-profile" id="toggle-home">
         <button id="homeButton"><i class="fa fa-home" tooltip = "toggle-home" flow = "right"></i></button>
       </a>
       <div class ="vertical-align">
@@ -34,9 +34,9 @@
             <button id="gridVisability"><i class="fa fa-eye" aria-hidden="true"></i></button>
             <!-- <span class="tooltiptext">Control view</span> -->
           </li>
-          <li data ="history" id="tool-history">
+          <!-- <li data ="history" id="tool-history">
             <img src="img/tool/history.png">
-          </li>
+          </li> -->
         </ul>
       </div>
     </section>
@@ -55,7 +55,8 @@
                 <a href="#" onclick="save()">Save</a>
                 <a href="#" onclick="openSaveAs()">Save As </a>
                 <a href="#" onclick ="exportMap()">Export Map</a>
-                <a href="#" onclick ="openExportAs()">Export As Map</a>
+                <a href="#" onclick ="openExportAsMap()">Export As Map</a>
+                <a href="#" onclick ="openExportAsTileset()">Export As Tileset</a>
                 <a href="#">Export As Image</a>
                 <a href="#">Delete</a>
                 <a href="#">Recent Files</a>
@@ -78,29 +79,28 @@
                   <button class="dropbtn">Layers</button>
                   <div class="dropdown-content">
                     <a href="#" onclick="newLayer()">New</a>
-                    <a href="#" onclick="newLayerGroup()">Group</a>
-                    <a href="#">Duplicate Layers</a>
+                    <!-- <a href="#" onclick="newLayerGroup()">Group</a> -->
+                    <!-- <a href="#">Duplicate Layers</a> -->
                     <a href="#">Remove Layers</a>
                     <a href="#"onclick="moveLayerUp()">Raise Layers</a>
                     <a href="#"onclick="moveLayerDown()">Lower Layers</a>
-                    <a href="#">Show/Hide Layers</a>
-                    <a href="#">Lock/Unlock Layers</a>
+                    <!-- <a href="#">Show/Hide Layers</a> -->
+                    <!-- <a href="#">Lock/Unlock Layers</a> -->
                     <!-- <a href="#"onclick="showHideGird()">Show/Hide Grid</a> -->
                   </div>
                 </div>
-                <div class="dropdown">
+                <!-- <div class="dropdown">
                     <button class="dropbtn">TileSet</button>
                     <div class="dropdown-content">
-                      <!-- <a href="#">Add Tile</a> -->
                       <a href="#" id="fileSelect">Add Tile</a>
                       <input type="file" id="fileElem" multiple accept="image/*" style="display:none"onchange="loadTile()">
                       <a href="#" id="fileRemove" onclick="removeFile()">Remove Tile </a>
                     </div>
-                  </div>
+                  </div> -->
                   <div class="dropdown">
                       <button class="dropbtn">About</button>
                       <div class="dropdown-content">
-                        <a href="#">User Manual</a>
+                        <!-- <a href="#">User Manual</a> -->
                         <a href="#" onclick="aboutLB()">About Level Builder</a>
                       </div>
                   </div>
@@ -111,22 +111,22 @@
           <div class="surface tab">
             <div class="editor-container">
               <div class="editor-tools">
-                <div class="surface btn active" id="btn-editor-cursor"
+                <div class="surface btn" id="btn-editor-cursor"
                   title="Selector tool - select objects to edit their properties" onclick="selectEditorTool('cursor')">
                   <i class="fa fa-mouse-pointer"></i></div>
-                <div class="surface btn" id="btn-editor-brush" title="(1) Brush tool - paint tiles"
+                <div class="surface btn" id="btn-editor-brush" title="Brush tool - paint tiles"
                   onclick="selectEditorTool('brush')"><i class="fa fa-paint-brush"></i></div>
-                <div class="surface btn" id="btn-editor-eraser" title="(2) Eraser tool - erase tile data"
-                  onclick="selectEditorTool('eraser')"><i class="fa fa-eraser"></i></div>
-                <div class="surface btn" id="btn-editor-move"
-                  title="(3) Drag tool - pan around the map editor, you can also hold down (alt)"
-                  onclick="selectEditorTool('move')"><i class="fa fa-arrows"></i></div>
+                <div class="surface btn" id="eraser" title="Eraser tool - erase tile data"
+                  onclick="EraseTile(this)"><i class="fa fa-eraser"></i></div>
+                <div class="surface btn" id="btn-editor-move" value = "doNotMove"
+                  title="Drag tool - pan around the map editor, you can also hold down (alt)"
+                  onclick="moveGrid(this)"><i class="fa fa-arrows"></i></div>
                 <div class="surface btn" id="btn-editor-zout" title="(-) Zoom out" onclick="zoomOut()"><i
                     class="fa fa-search-minus"></i></div>
                 <div class="surface btn" id="btn-editor-zin" title="(+) Zoom in" onclick="zoomIn()"><i
                     class="fa fa-search-plus"></i></div>
               </div>
-              <div class="surface editor-border">
+              <div class="surface editor-border" style =" overflow: scroll;">
                 <div class = "Map">
                   <div class = "Grid"></div>
                 </div>
@@ -141,12 +141,12 @@
 
           <div id="MapLayers" class="tabcontent">
               <div class="project-tools">
-                <div class="surface btn" id="btn-layer-group" title="Create a new group" onclick="createLayerGroup()" disabled="disabled"><i
-                    class="fa fa-folder"></i></div>
+                <!-- <div class="surface btn" id="btn-layer-group" title="Create a new group" onclick="createLayerGroup()" disabled="disabled"><i
+                    class="fa fa-folder"></i></div> -->
                 <div class="surface btn" id="btn-layer-add" title="Create a layer" onclick="newLayer()"><i
                     class="fa fa-file-o"> </i></div>
-                <div class="surface btn req-layer" id="btn-layer-duplicate" title="Duplicate layer"
-                  onclick="duplicateLayer()"><i class="fa fa-files-o"></i></div>
+                <!-- <div class="surface btn req-layer" id="btn-layer-duplicate" title="Duplicate layer"
+                  onclick="duplicateLayer()"><i class="fa fa-files-o"></i></div> -->
                 <div class="surface btn req-layer" id="btn-layer-up" title="Move group or layer upwards"
                   onclick="moveLayerUp()"><i class="fa fa-arrow-up"></i></div>
                 <div class="surface btn req-layer" id="btn-layer-down" title="Move group or layer downwards"
@@ -175,7 +175,7 @@
   </div>
 
   <div class="window-tint">       </div>
-  <div class="window surface" id="create-map-window">
+  <div class="window surface" id="create-map-window" style="z-index : 1000;">
       <div class="window-title-bar">
         <h4>New map</h4>
         <div class="surface btn" onclick="cancelCreateMap()"><i class="fa fa-close"></i></div>
@@ -191,18 +191,18 @@
         <div class="input-header">Map size</div>
         <div class="input-row">
           <label for="map-width">Width :</label>
-          <input type="text" placeholder="eg. 32" id="map-width"/>
+          <label><input type="text" placeholder="eg. 32" id="map-width"/>columns</label>
 
           <label for="map-height">Height:</label>
-          <input type="text" placeholder="eg. 32" id="map-height"/>
+          <label><input type="text" placeholder="eg. 32" id="map-height"/>rows</label>
         </div>
         <div class="input-header">Tile size</div>
         <div class="input-row">
           <label for="tile-width">Width :</label>
-          <input type="text" placeholder="eg. 32" id="tile-width"/>
+          <label><input type="text" placeholder="eg. 32" id="tile-width"/> px</label>
 
           <label for="tile-height">Height:</label>
-          <input type="text" placeholder="eg. 32" id="tile-height"/>
+          <label><input type="text" placeholder="eg. 32" id="tile-height"/>px</label>
         </div>
       </div>
       <div class="window-actions">
@@ -211,7 +211,7 @@
       </div>
     </div>
 
-    <div class="window surface" id="create-tileset-window">
+    <div class="window surface" id="create-tileset-window" style="z-index : 1000;">
         <div class="window-title-bar">
           <h4>New TileSet</h4>
           <div class="surface btn" onclick="cancelCreateTileSet()"><i class="fa fa-close"></i></div>
@@ -220,10 +220,11 @@
             <div class="input-header">TileSet </div>
             <label for="fname">File name:</label>
             <input type="text" id="TilesetName" name="fname"><br><br> 
-          <div class="input-header">Type</div>
-          based On TileSet Img: <input type="checkbox" id="basedOnTileSetImg"  onclick="myCheck()">
-          collection Of Img: <input type="checkbox" id="collectionOfImg"  onclick="myCheck()">
-          <div class="input-row" id="txt" style="display:none">
+          <div class="input-header">Tileset Image</div>
+          <!-- based On TileSet Img: <input type="checkbox" id="basedOnTileSetImg"  onclick="myCheck()">
+          collection Of Img: <input type="checkbox" id="collectionOfImg"  onclick="myCheck()"> -->
+          <!-- <div class="input-row" id="txt" style="display:none"> -->
+              <div class="input-row" id="txt">
           <div class="newline"></div>
           <div class="input-header">Image </div> 
           <!-- <label for="fname">Source:</label>
@@ -232,27 +233,26 @@
           <div class="newline"></div>
           <div class="input-row">
             <label for="tileSet-width">Width :</label>
-            <input type="text" placeholder="eg. 32" id="tileSet-width"/>
+            <label><input type="text" placeholder="eg. 32" id="tileSet-width"/> px</label>
             <label for="tileSet-height">Height:</label>
-            <input type="text" placeholder="eg. 32" id="tileSet-height"/>
+            <label><input type="text" placeholder="eg. 32" id="tileSet-height"/> px</label>
             <label for="spacing">Spacing:</label>
-            <input type="text" placeholder="eg. 32" id="spacing"/>
+            <label><input type="text" placeholder="eg. 32" id="spacing"/> px</label>
           </div>
           <div class="window-actions">
               <div class="surface btn" onclick="cancelCreateTileSet()">Cancel</div>
               <div class="surface btn" onclick="newTabBtn2()">OK</div>
-              <!-- <div class="surface btn" onclick="openTileSet(event, 'singleIMG')">OK</div> -->
-            </div>
+          </div>
           </div>
         </div>
-        <div class="window-actions" id="text" style="display:none">
+        <!-- <div class="window-actions" id="text" style="display:none">
           <div class="surface btn" onclick="cancelCreateTileSet()">Cancel</div>
           <div class="surface btn" onclick="newTabBtn()">OK</div>
-          <!-- <div class="surface btn" onclick="openTileSet(event, 'collections')">OK</div> -->
-        </div>
+           <div class="surface btn" onclick="openTileSet(event, 'collections')">OK</div> 
+        </div> -->
       </div>
 
-      <div class="window surface" id="saveas">
+      <div class="window surface" id="saveas" style="z-index : 1000;">
           <div class="window-title-bar">
             <h4>Save As</h4>
             <div class="surface btn" onclick="cancelSaveAs()"><i class="fa fa-close"></i></div>
@@ -266,27 +266,43 @@
           </div>
       </div>
 
-      <div class="window surface" id="exportas">
+      <div class="window surface" id="exportas_map" style="z-index : 1000;">
         <div class="window-title-bar">
-          <h4>Save As</h4>
-          <div class="surface btn" onclick="cancelExportAs()"><i class="fa fa-close"></i></div>
+          <h4>Export Map As</h4>
+          <div class="surface btn" onclick="cancelExportAsMap()"><i class="fa fa-close"></i></div>
           <div class="newline"></div>
-          <label for="exportAsName">File Name :</label>
-            <input type="text" placeholder="name" id="exportAsName"/>
+          <label for="exportAsName_map">File Name :</label>
+            <input type="text" placeholder="name" id="exportAsName_map"/>
         </div>
         <div class="window-actions">
-          <div class="surface btn" onclick="cancelExportAs()">Cancel</div>
+          <div class="surface btn" onclick="cancelExportAsMap()">Cancel</div>
           <div class="surface btn" onclick="exportAsMap()">OK</div> 
         </div>
     </div>
 
-      <div class="window surface" id="loadFile">
+      <div class="window surface" id="exportas_tileset" style="z-index : 1000;">
+        <div class="window-title-bar">
+          <h4>Export Tileset As</h4>
+          <div class="surface btn" onclick="cancelExportAsTileset()"><i class="fa fa-close"></i></div>
+          <div class="newline"></div>
+          <label for="exportAsName_tileset">File Name :</label>
+            <input type="text" placeholder="name" id="exportAsName_tileset"/>
+        </div>
+        <div class="window-actions">
+          <div class="surface btn" onclick="cancelExportAsTileset()">Cancel</div>
+          <div class="surface btn" onclick="exportAsTileset()">OK</div> 
+        </div>
+    </div>
+
+      <div class="window surface" id="loadFile" style="z-index : 1000;">
           <div class="window-title-bar">
             <h4>Load</h4>
             <div class="surface btn" onclick="cancelload()"><i class="fa fa-close"></i></div>
             <div class="newline"></div> 
             <label for="loadFileName">File Name :</label>
               <input type="text" placeholder="name" id="loadFileName"/>
+              Load Map: <input type="checkbox" id="selectLoadMap" onclick = "selectLoadOption(this.id)">
+              Load Tileset: <input type="checkbox" id="selectLoadTileset" onclick="selectLoadOption(this.id)">
           </div>
           <div class="window-actions">
             <div class="surface btn" onclick="cancelload()">Cancel</div>
@@ -294,7 +310,7 @@
           </div>
       </div>
 
-      <div class="window surface" id="about">
+      <div class="window surface" id="about" style="z-index : 1000;">
           <div class="window-title-bar">
             <h4>About</h4>
             <p>The Level Builder is a tool for making a map. 
@@ -318,16 +334,11 @@
             <!-- <p>Warning: Creating a new layer will discard your current progress!</p> -->
             <div class="input-header">Select</div>
             <div class="input-row">
-              <!-- <input class="map-perspective" id="tile-layer" name="layer-obj" type="radio" value="tile-layer" checked="checked"/> -->
-              <!-- <label for="tile-layer">Tile Layer</label> -->
-              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="tileLayer">tile layer<br>
-              
+              <input type="radio" name="layerType" onclick="myFunction(this.value)" value="tileLayer" checked>tile layer<br>
             </div>
-            <div class="input-row">
-              <!-- <input class="map-perspective" id="object-layer" name="layer-obj" value="object-layer" type="radio"/> -->
+            <!-- <div class="input-row">
               <input type="radio" name="layerType" onclick="myFunction(this.value)" value="objectLayer">object layer<br>
-              <!-- <label for="object-layer">Object Layer</label> -->
-            </div>
+            </div> -->
             <div class="input-row">
               <label for="input-layer">Layer Name :</label>
               <input type="text" placeholder="Layer 1" id="input-layer"/>
@@ -356,33 +367,68 @@ class Editor{
    //$("canvas").detach(); remove all canvas
    
    loadTileset(tileset){
-     this.loadedTilesetList.push(tileset);
-     this.currentTileset = tileset;
+      this.loadedTilesetList.push(tileset);
+      this.currentTileset = tileset;
    }
 
-   closeMap(){
-      
-   }
-   
    clearWorkspace(){
-    var layerList = this.currentMap.LayerList;
-    layerList.forEach(function(layer){
-    var layerCanvas = layer.canvasLayer.canvas;
-      document.getElementsByClassName('Map')[0].removeChild(layerCanvas);
-    });
+    $("canvas").detach();
+    if(this.currentMap){
+      this.currentMap = null;
+      this.currentLayer = null;
+      this.selectedLayerId = null;
+      this.grid =  null;
+    }
   }
+}
+
+function handleLoadMapRequest(mapName){
+    var loadMapJSON = {"mapName" : mapName};
+    loadAll_Map_Helper(loadMapJSON);
+
+}
+
+function handleLoadTilesetRequest(tileSetName, username){
+    var loadTilesetJSON = {"name" : tileSetName, "username" : username};
+    loadAll_Tileset_Helper(loadTilesetJSON);
+}
+
+function handleExportMapRequest(mapName){
+    var loadMapJSON = {"mapName": mapName};
+    loadAll_Map_Helper(loadMapJSON);
+    setTimeout(exportMap, 2000); //wait until map has loaded to start exporting
+}
+
+function handleExportTilesetRequest(tileSetName, username){
+    var loadTilesetJSON = {"name" : tileSetName, "username" : username};
+    loadAll_Tileset_Helper(loadTilesetJSON);
+    setTimeout(exportTileset, 2000, tileSetName); //wait until tileset has loaded to start exporting
 }
 
 window.onload = (event) => {
   editor = new Editor();
   editor.userName = '${username}';
   console.log("create editor class");
+
+  //If parameters exist in the URL, handle request
+  var queryString = window.location.search;
+  var urlParams = new URLSearchParams(queryString);
+  if(urlParams.has('load_map')) {
+      handleLoadMapRequest(urlParams.get('load_map'));
+  } else if(urlParams.has('load_tileset') && urlParams.has('owned_by')) {
+      handleLoadTilesetRequest(urlParams.get('load_tileset'), urlParams.get('owned_by'));
+  } else if(urlParams.has('export_map')) {
+      handleExportMapRequest(urlParams.get('export_map'));
+  } else if(urlParams.has('export_tileset') && urlParams.has('owned_by')) {
+      handleExportTilesetRequest(urlParams.get('export_tileset'), urlParams.get('owned_by'));
+  }
 };
 
 </script>
 <script type="text/javascript" src="js/Map.js"></script>
 <script type="text/javascript" src="js/Tileset.js"></script>
 <script type="text/javascript" src="js/tilemap.js"></script>
+<script type="text/javascript" src="js/editor.js"></script>
 <script type="text/javascript" src="js/export.js"></script>
 <!-- <script type="text/javascript" src="js/npm.js"></script> -->
 <script type="text/javascript" src="js/FileSaver.js"></script>

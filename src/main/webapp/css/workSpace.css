@@ -66,14 +66,14 @@ html, body {
   text-align: center;
 }
 .btn:hover {
-  background: #323035;
+  background: #817e7d;
   cursor: pointer;
 }
 .btn:active {
   -webkit-box-shadow: 0;
   -moz-box-shadow: 0;
   box-shadow: 0;
-  background: #312F34;
+  background: rgb(71, 73, 68);
   top: 1px;
 }
 .btn[disabled='disabled'] {
@@ -128,8 +128,6 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: auto;
-  overflow-y: auto;
 }
 
 .window-title-bar, .tile-tools, .project-tools, .editor-tools {
@@ -658,7 +656,7 @@ opacity: 50;
 
 
 .tab {
-overflow: hidden;
+overflow: auto;
 border: 1px solid rgb(75, 73, 73);
 background-color: #292727;
 }

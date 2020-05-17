@@ -9,13 +9,31 @@ canvas {
 .visible-btn {
     float: right;
   }
-  .fa {
+  
+#gridVisability{
+  background-color: #292c31;
+  border: 5px solid transparent;
+  border-left: 6px solid transparent;
+  transition: all .2s linear;
+  /* display: block; */
+}
+
+
+#homeButton{
+  background-color: #292c31;
+  border: 5px solid transparent;
+  border-left: 8px solid transparent;
+  border-top: 19px solid transparent;
+  transition: all .2s linear;
+  /* display: block; */
+}
+.fa {
     font-size: 15px;
     cursor: pointer;
     user-select: none;
     color : whitesmoke;
     float: right;
   }
-  .fa:hover {
+.fa:hover {
     color : white;
   }
