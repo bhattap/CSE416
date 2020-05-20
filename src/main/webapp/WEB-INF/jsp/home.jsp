@@ -60,7 +60,7 @@
                 <a href="#">Export As Image</a>
                 <a href="#">Delete</a>
                 <a href="#">Recent Files</a>
-                <a href="#">Close All</a>
+                <a href="#" onclick ="clearWorkspace()">Clear map</a>
               </div>
             </div>
             <div class="dropdown">
@@ -68,11 +68,10 @@
                 <div class="dropdown-content">
                   <a href="#">Undo</a>
                   <a href="#">Redo</a>
-                  <a href="#">Cut</a>
+                  <!-- <a href="#">Cut</a>
                   <a href="#">Copy</a>
                   <a href="#">Paste</a>
-                  <a href="#">Select All</a>
-                  <a href="#">Delete</a>
+                  <a href="#">Delete</a> -->
                 </div>
               </div>
               <div class="dropdown">
@@ -114,8 +113,8 @@
                 <div class="surface btn" id="btn-editor-cursor"
                   title="Selector tool - select objects to edit their properties" onclick="selectEditorTool('cursor')">
                   <i class="fa fa-mouse-pointer"></i></div>
-                <div class="surface btn" id="btn-editor-brush" title="Brush tool - paint tiles"
-                  onclick="selectEditorTool('brush')"><i class="fa fa-paint-brush"></i></div>
+                <!-- <div class="surface btn" id="btn-editor-brush" title="Brush tool - paint tiles"
+                  onclick="selectEditorTool('brush')"><i class="fa fa-paint-brush"></i></div> -->
                 <div class="surface btn" id="eraser" title="Eraser tool - erase tile data"
                   onclick="EraseTile(this)"><i class="fa fa-eraser"></i></div>
                 <div class="surface btn" id="btn-editor-move" value = "doNotMove"
@@ -362,9 +361,11 @@ class Editor{
     this.userName;
     this.grid;
     this.selectedLayerId;
+    this.canScaleX =2;
+    this.canScaleY =2;
+    this.zoomcount =0;
 
    }
-   //$("canvas").detach(); remove all canvas
    
    loadTileset(tileset){
       this.loadedTilesetList.push(tileset);

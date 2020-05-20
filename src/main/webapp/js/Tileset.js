@@ -1,19 +1,22 @@
 class Tileset{
 	constructor(name, image, imgWidth, imgHeight, tileWidth, tileHeight){
 	   this.name = name;
-	  //  this.src = src;
+	   this.src = "./src/main/resources/tileset_src/" + name +".png";
 	   this.image = image;
        this.imgWidth = imgWidth;
        this.imgHeight = imgHeight;
        this.tileWidth = tileWidth;
 	   this.tileHeight = tileHeight;
    }
+   setSrc(filePath){
+	this.src = filePath;
+   }
+
 }
 
 class Tile{
-	constructor(id, src, startX, startY, tileWidth, tileHeight){
+	constructor(id, startX, startY, tileWidth, tileHeight){
 		this.id = id;
-		this.src = src;
 		this.startX = startX;
 		this.startY = startY;
 		this.tileWidth = tileWidth;
@@ -30,9 +33,9 @@ class SingleImageTileset extends Tileset{
 		this.tileList= new Array();
 	}
 
-	addTile(id, image, startX, startY, tw, th){
+	addTile(id, startX, startY, tw, th){
 		var newTile;
-		newTile = new Tile(id, image, startX, startY, tw, th);
+		newTile = new Tile(id, startX, startY, tw, th);
 		this.tileList.push(newTile);
 	}
  }
@@ -45,14 +48,13 @@ function createSingleTiles(tileSetName, image, tileWidth, tileHeight, spacing){
   var tileList =[];
   var plus = tileWidth + spacing;
   var plusH = tileHeight +spacing;
-  
   for(var i = 0;i < colT * rowT; i++){
 		tile = {};
 		tile.xPos = xPos; 
 		tile.yPos = yPos;
 		tile.tw = tileWidth;
 		tile.th = tileHeight;
-		editor.currentTileset.addTile(i, image.src, tile.xPos, tile.yPos, tile.tw, tile.th);
+		editor.currentTileset.addTile(i, tile.xPos, tile.yPos, tile.tw, tile.th);
 		tileList.push(tile);
 		xPos += plus;
 		limit = loadImg.width-tile.tw;
@@ -70,7 +72,7 @@ function createSingleTiles(tileSetName, image, tileWidth, tileHeight, spacing){
 		  }
 		}
   }
-	return tileList;
+;	return tileList;
   }
 
 class CollectionTileset extends Tileset{

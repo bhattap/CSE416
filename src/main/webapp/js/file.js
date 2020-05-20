@@ -1,7 +1,9 @@
 function getTilesetwithName(nameT) {
   var list = editor.loadedTilesetList;
+  console.log("check ");
+  console.log(list);
   var tileset;
-  
+  console.log("function callsed "+list.length);
   for(var i=0; i<list.length; i++){
     if(list[i].name == nameT){
       tileset = list[i];
@@ -131,8 +133,29 @@ var gridVisIcon = document.getElementById("gridVisability");
 
 
 function createMap() {
-  // workspace should be removed
   let mapType = "top";
+
+    //if any errors in inputs, inform user
+    if("" == document.getElementById("map-name").value){
+        alert("Invalid input. Please enter a name for this map.");
+        return;
+    }
+
+    var inputWrong = false;
+    if(isNaN(document.getElementById("map-width").value) || "" == document.getElementById("map-width").value){
+        inputWrong = true;
+    } else if(isNaN(document.getElementById("map-height").value) || "" == document.getElementById("map-height").value){
+        inputWrong = true;
+    } else if(isNaN(document.getElementById("tile-width").value) || "" == document.getElementById("tile-width").value){
+        inputWrong = true;
+    } else if(isNaN(document.getElementById("tile-height").value) || "" == document.getElementById("tile-height").value){
+        inputWrong = true;
+    }
+
+    if(inputWrong){
+        alert("Invalid input. Please enter integer values for map width/height and tile width/height.");
+        return;
+    }
 
   var mapWidth = parseInt(document.getElementById("map-width").value);
   var mapHeight = parseInt(document.getElementById("map-height").value);
@@ -149,7 +172,12 @@ function createMap() {
   // loadDataFromDB(newMap.id);
 
   loadMap(newMap);
+  //remove inputs
   document.getElementById("map-name").value = "";
+  document.getElementById("map-width").value = "";
+  document.getElementById("map-height").value = "";
+  document.getElementById("tile-width").value = "";
+  document.getElementById("tile-height").value = "";
   // create map object and load
   closeWindow(createMapWindow);
 }
@@ -166,8 +194,6 @@ function createLayer() {
       }
     } 
     document.getElementById("input-layer").value = "";
-    console.log(layerType);
-    console.log(layerName);
 
   closeWindow(createLayerWindow);
   //showList(layerType, layerName);
@@ -211,6 +237,37 @@ function newTabBtn() {
   var getCanvas;
 
   function newTabBtn2() {
+      //if any errors in inputs, inform user
+      if("" == document.getElementById("TilesetName").value){
+          alert("Invalid input. Please enter a name for this tileset.");
+          return;
+      }
+      if(document.getElementById("myFile").files[0] == null){
+          alert("Please select a file.");
+          return;
+      }
+
+      var inputWrong = false;
+      if(isNaN(document.getElementById("tileSet-height").value) || "" == document.getElementById("tileSet-height").value){
+          inputWrong = true;
+      } else if(isNaN(document.getElementById("tileSet-width").value) || "" == document.getElementById("tileSet-width").value){
+          inputWrong = true;
+      } else if(isNaN(document.getElementById("spacing").value) || "" == document.getElementById("spacing").value){
+          inputWrong = true;
+      }
+
+      if(inputWrong){
+          alert("Invalid input. Please enter integer values for tileset width/height and spacing.");
+          return;
+      }
+
+    for(var i=0; i<editor.loadedTilesetList.length; i++){
+      if(editor.loadedTilesetList[i].name == document.getElementById("TilesetName").value){
+        alert("Already Exist, please rename the tileset!");
+        return;
+      }
+    }
+
     var tilesetName = document.getElementById("TilesetName").value;
     tilesetH = Number(document.getElementById("tileSet-height").value);
     tilesetW = Number(document.getElementById("tileSet-width").value);
@@ -221,6 +278,9 @@ function newTabBtn() {
     document.getElementById("TilesetName").value = "";
     closeWindow(createTileSetWindow);
     document.getElementById("myFile").value = "";
+    document.getElementById("tileSet-height").value = "";
+    document.getElementById("tileSet-width").value = "";
+    document.getElementById("spacing").value = "";
     }
 
   function createNewtab(name, tHeight, tWidth, spacing){
@@ -244,7 +304,7 @@ function newTabBtn() {
 
   document.getElementById("newTab").addEventListener("click", function(e) {
     currentTileSetName = e.target.innerHTML;
-    openTilesetTab(e, e.target.innerHTML); 
+    openTilesetTab(e.target, e.target.innerHTML); 
     editor.currentTileset = getTileset(currentTileSetName);
     getCanvas = document.getElementById(currentTileSetName+"1");
     tilesetH = editor.currentTileset.tileList[0].tileHeight;
@@ -306,7 +366,7 @@ function newTabBtn() {
    var ctxT;
    var tilecount;
 
-   function loadImage(e){
+  function loadImage(e){
      colT = Math.floor(loadImg.width / (tilesetW+spacing));
      rowT = Math.floor(loadImg.height / (tilesetH+spacing));
      totalWidth = tilesetW * colT;
@@ -327,11 +387,11 @@ function newTabBtn() {
      tileList = createSingleTiles(currentTileSetName, loadImg, tilesetW, tilesetH, spacing);
      ctxTbase.drawImage(loadImg, 0, 0, loadImg.width, loadImg.height, 0, 0, loadImg.width, loadImg.height);
      drawTile();
-    openTilesetTab(e, currentTileSetName); 
+     openTilesetTab(e.target, currentTileSetName); 
     }
 
-    function loadImageDB(e){
-      colT = Math.floor(loadImg.width / (tilesetW+spacing));
+    function loadImageDB(target){
+    colT = Math.floor(loadImg.width / (tilesetW+spacing));
      rowT = Math.floor(loadImg.height / (tilesetH+spacing));
      totalWidth = tilesetW * colT;
      totalHeight = tilesetH * rowT;
@@ -348,7 +408,7 @@ function newTabBtn() {
      tileList = createSingleTiles(currentTileSetName, loadImg, tilesetW, tilesetH, spacing);
      ctxTbase.drawImage(loadImg, 0, 0, loadImg.width, loadImg.height, 0, 0, loadImg.width, loadImg.height);
      drawTile();
-    //  openTilesetTab(e, currentTileSetName); 
+     openTilesetTab(target, currentTileSetName); 
      }
 
 var index;
@@ -378,7 +438,7 @@ var index;
       return i;
     }
 
-  function openTilesetTab(evt, tabName) {
+  function openTilesetTab(target, tabName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tilesetContent");
     for (i = 0; i < tabcontent.length; i++) {
@@ -389,7 +449,8 @@ var index;
       tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
     document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
+    // evt.currentTarget.className += " active";
+    target.className += " active";
   }
 
   function openTab(evt, cityName) {
@@ -445,6 +506,10 @@ function saveAsMap(){
     alert("There is no map to save");
   } else{
     var saveAsName = document.getElementById("saveAsName").value;
+    if("" == saveAsName){
+        alert("Invalid input. Please enter a name for this map.");
+        return;
+    }
     saveAll_Map(map, map.LayerList, saveAsName);
   }
   closeWindow(saveasWindow);
@@ -460,38 +525,71 @@ function save(){
 }
 
 function loadFile(){
+  var inputName = document.getElementById('loadFileName').value;
   var selectMap = document.getElementById("selectLoadMap").checked;
   var selectTileset = document.getElementById("selectLoadTileset").checked;
-  if(selectMap == true){
+  if(!nameValidator(inputName)){
+    alert("Invalid input. Please enter a valid name.");
+  } else if(selectMap == true){
     loadAll_Map();
   } else if(selectTileset == true){
-    loadAll_Tileset();
+    (canLoadTileset(inputName)) ? loadAll_Tileset() : alert('This tileset is already loaded!');
   } else{
     alert("Please select the type of file to load!");
   }
+  document.getElementById('loadFileName').value ="";
 }
 
-function loadAll_Map_Helper(loadMapJSON) {
+function nameValidator(targetName, targetList){
+  var invalidInputRex = /^(?=[\S])[^\\ \/ : * ? " < > | ]+$/;
+  if(invalidInputRex.test(targetName)){ return true;}
+  return false;
+}
+
+function canLoadTileset(inputName){
+  var canLoad = true;
+  var targetList = editor.loadedTilesetList;
+  if(targetList){
+    targetList.forEach(function(tileset){
+      if (tileset.name == inputName) {
+        console.log("same! return false");
+        canLoad= false;}
+    });
+  }
+  return canLoad;
+ }
+
+async function loadAll_Map_Helper(loadMapJSON) {
     loadDataFromDB(loadMapJSON, "load_map")
         .then(jsonData => {
             var loadedMap = parseMapJson(jsonData.map);
-            // save tileset info in map
 
-            parseTilesetInMapJson(jsonData.tilesetsInMap, loadedMap);
-            // save layers in map
             parseLayerJson(jsonData.layers, loadedMap);
-            // add and show layer canvases on the map
+
             loadMap(loadedMap);
+            // parseTilesetInMapJson(jsonData.tilesetsInMap, loadedMap);
+            // var tilesetNameIter = loadedMap.selectedTilesetList;
+            // var username = editor.userName;
+            // let chain = Promise.resolve();
+            // for (let [tilesetName, firstgid] of tilesetNameIter) {
+            //   console.log(0);
+            //   chain = chain.then(()=> loadAll_Tileset_Helper( {"name" : tilesetName, "username" : username}));
+            //   console.log(2);
+            // }
+            parseTilesetInMapJson(jsonData.tilesetsInMap, loadedMap)
+            .then(()=> paintAllLayers(loadedMap.LayerList));
+            // add and show layer canvases on the map
             // paint all layers on the map
-            paintAllLayers(loadedMap.LayerList);
         });
 }
 
 function paintAllLayers(loadedLayers){
+  console.log(3);
   for (let [layerId, layer] of loadedLayers) {
     // paint a single layer
     layer.paintTiles();
   }
+  updateGidAfterLoad();
 }
 
 function loadAll_Map(){
@@ -501,24 +599,24 @@ function loadAll_Map(){
     closeWindow(loadWindow);
 }
 
-function loadAll_Tileset_Helper(loadTilesetJSON) {
+async function loadAll_Tileset_Helper(loadTilesetJSON) {
     var tilesetJson;
-    loadDataFromDB(loadTilesetJSON, "load_tileset")
+    await loadDataFromDB(loadTilesetJSON, "load_tileset")
         .then(jsonData => {
             tilesetJson = jsonData.tileset;
             return parseImageJson(jsonData.image);
         }).then(newImage => {
-        console.log(newImage);
-        var newTileset = parseTilesetJson(tilesetJson, newImage);
-        var currentTS = editor.currentTileset;
-        createNewtab(currentTS.name, currentTS.tileHeight, currentTS.tileWidth, currentTS.spacing);
-        loadImg = new Image();
-        loadImg.src = currentTS.image.src;
-        tilesetH = currentTS.tileHeight;
-        tilesetW = currentTS.tileWidth;
-        spacing = currentTS.spacing;
-        loadImg.addEventListener('load',loadImageDB,false);
+          var newTileset = parseTilesetJson(tilesetJson, newImage);
+          var currentTS = editor.currentTileset;
+          createNewtab(currentTS.name, currentTS.tileHeight, currentTS.tileWidth, currentTS.spacing);
+          loadImg = new Image();
+          loadImg.src = currentTS.image.src;
+          tilesetH = currentTS.tileHeight;
+          tilesetW = currentTS.tileWidth;
+          spacing = currentTS.spacing;
+          loadImageDB(loadImg);
     });
+    return Promise.resolve('compelet');
 }
 
 var loadedImg;
@@ -670,33 +768,38 @@ function parseTilesetJson(tileset, newImage){
     return newTileset;
 }
 
-function parseTilesetInMapJson(tilesetsInMap, map){
-  let gidList = map.csvGid;
-  var tilesetList = map.selectedTilesetList;
+async function loadtilesetPromise(tilesetNameIter) {
+  var username = editor.userName;
+  // for (let [tilesetName, firstgid] of tilesetNameIter) {
+    var tilesetNames = Array.from(tilesetNameIter.keys());
+    console.log(0);
+    var complete = await Promise.all(tilesetNames.map((tilesetName)=>loadAll_Tileset_Helper( {"name" : tilesetName, "username" : username})));
+    console.log(2);
+  // }
+   return Promise.resolve();
+}
+
+async function parseTilesetInMapJson(tilesetsInMap, map){
+    var username = editor.userName;
+    loadTilesetInMap(tilesetsInMap, map.csvGid, map.selectedTilesetList);
+    var tilesetNameIter = map.selectedTilesetList;
+    // var username = editor.userName;
+    var complete = await loadtilesetPromise(tilesetNameIter);
+    return complete;
+  // return map.selectedTilesetList;
+}
+
+ 
+
+function loadTilesetInMap(tilesetsInMap, gidList, tilesetList){
   tilesetsInMap.forEach(function(paintedtile){
     var tilesetName = paintedtile.tilesetName;
     var firstgid = paintedtile.firstgid;
-
-    // 1. set csvGid
     gidList.set(paintedtile.globalId, firstgid);
-
-    // 2. set selectedTilesetList
-
-    // 2-1) if tilesetList already has current tileset info
-    //      pass the rest of the code below and keep looping
-    console.log(tilesetName);
     if(!tilesetList.has(tilesetName)){
-      console.log(tilesetName + " in!");
-      // 2-2) else set the tileset info
-      loadTilesetInMap(tilesetList, tilesetName, firstgid, paintedtile.username);
+      tilesetList.set(tilesetName, firstgid);
     }
-
   });
-}
-
-function loadTilesetInMap(tilesetList, tilesetName, firstgid, username){
-  tilesetList.set(tilesetName, firstgid);
-  loadAll_Tileset_Helper( {"name" : tilesetName, "username" : username});
 }
 
 
@@ -796,7 +899,6 @@ function getTilesetInMapJSON(mapData){
       "tilesetName" : getKey(fristgid),
       "username": editor.userName,
       "firstgid" : fristgid,
-      "gid": gid,
       "globalId" : gid
     });
   }
@@ -845,6 +947,7 @@ function saveDataToDB(savingData, save_endpoint){
       url : "/fileController/" + save_endpoint,
       data : JSON.stringify(savingData),
       dataType : 'json',
+      async: false,
       processData: false, 
     
       error : function(error){
