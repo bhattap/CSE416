@@ -9,7 +9,11 @@ function cancelExportAsMap() {
 }
     
 function openExportAsTileset() {  
-    showWindow(exportasTilesetWindow);
+    if(editor.currentTileset){
+        showWindow(exportasTilesetWindow);
+    } else{
+        alert("Please choose the select the tileset in the workspace first");
+    }
 }
     
 function cancelExportAsTileset() {  
@@ -27,7 +31,7 @@ function exportMap(filename = editor.currentMap.id){
     }
 }
 
-function exportTileset(filename){
+function exportTileset(filename = editor.currentTileset.name){
     var targetTileset;
     var tilesetList = editor.loadedTilesetList;
     tilesetList.forEach(function(tileset){
@@ -54,14 +58,14 @@ function exportAsMap(){
     exportMap(fileName);
 }
 
-function exportAsTileset(){
-    var fileName = document.getElementById("exportAsName_tileset").value;
-    if("" == fileName){
-        alert("Invalid input. Please enter a name for this tileset.");
-        return;
-    }
-    exportTileset(fileName);
-}
+// function exportAsTileset(){
+//     var fileName = document.getElementById("exportAsName_tileset").value;
+//     if("" == fileName){
+//         alert("Invalid input. Please enter a name for this tileset.");
+//         return;
+//     }
+//     exportTileset(fileName);
+// }
 
 function createMapXMLFile(xmlFile, name) {
     var xml = new XMLSerializer().serializeToString(xmlFile);

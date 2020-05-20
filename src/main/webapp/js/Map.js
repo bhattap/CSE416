@@ -169,7 +169,7 @@ function createVisibleButton(layer){
     // if (!layer.layerProp.isVisible()){
     //     [result, toggleValue] = [toggleValue, result];
     // }
-    visibleButton.className = "fa "+result;
+    visibleButton.className = "fa " + result;
     visibleButton.id = layer.order;
     visibleButton.addEventListener("click", function(e){
         e.target.classList.toggle(toggleValue);

@@ -285,12 +285,13 @@
           <h4>Export Tileset As</h4>
           <div class="surface btn" onclick="cancelExportAsTileset()"><i class="fa fa-close"></i></div>
           <div class="newline"></div>
+          <div id="currentTileset"></div>
           <label for="exportAsName_tileset">File Name :</label>
             <input type="text" placeholder="name" id="exportAsName_tileset"/>
         </div>
         <div class="window-actions">
           <div class="surface btn" onclick="cancelExportAsTileset()">Cancel</div>
-          <div class="surface btn" onclick="exportAsTileset()">OK</div> 
+          <div class="surface btn" onclick="exportTileset()">OK</div> 
         </div>
     </div>
 

@@ -39,7 +39,7 @@ class Grid{
         this.ctx.stroke();
         this.ctx.beginPath();
         this.ctx.strokeStyle = "lightgrey";
-        this.ctx.strokeRect(0, 0, cols, rows);
+        // this.ctx.strokeRect(0, 0, cols, rows);
         this.ctx.restore();
         this.show = true;
     }
@@ -63,7 +63,7 @@ class Grid{
         var gridCanvas = this.grid;
         if(gridCanvas){
             gridCanvas.addEventListener('mousewheel', this.zoomScroll);
-            gridCanvas.addEventListener('mouseover', this.setCenter);
+            gridCanvas.addEventListener('mousemove', this.setCenter);
             gridCanvas.style.zIndex = 999;
         }
     }
@@ -71,7 +71,7 @@ class Grid{
         var gridCanvas = this.grid;
         if(gridCanvas){
             gridCanvas.removeEventListener('mousewheel', this.zoomScroll);
-            gridCanvas.removeEventListener('mouseover', this.setCenter);
+            gridCanvas.removeEventListener('mousemove', this.setCenter);
             gridCanvas.style.zIndex = "";
         }
     }
@@ -83,7 +83,6 @@ class Grid{
     setCenter(e){
         editor.zoomFeature.centerX = e.clientX;
         editor.zoomFeature.centerY = e.clientY;
-        console.log(editor.zoomFeature.centerX);
       }
 
 
