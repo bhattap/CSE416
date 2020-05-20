@@ -258,26 +258,11 @@ class TiledLayer extends Layer{
     eraseTile(x, y, canvas,th, tw){
         var mapH = editor.currentMap.tileHeight;
         var mapW = editor.currentMap.tileWidth;
-        var ctxx =this.canvasLayer.canvas.getContext("2d");
-        // if (th>mapH || tw>mapW){
-        //     if(th>mapH){
-        //         this.canvasLayer.canvas.getContext("2d").clearRect(x*mapW, y*mapH, mapW, mapH);
-        //         this.csv[y][x] = 0;
-        //         var imgH = ctxx.getImageData(x*mapW, (y+1)*mapH, tw, th-mapH);
-        //         ctxx.putImageData(imgH, x*mapW, (y+1)*mapH);
-        //     }
-        //     if(tw>mapW){
-        //         this.canvasLayer.canvas.getContext("2d").clearRect(x*mapW, y*mapH, mapW, mapH);
-        //         this.csv[y][x] = 0;
-        //         var imgW = ctxx.getImageData((x+1)*mapW, y*mapH, tw-mapW, th);
-        //         ctxx.putImageData(imgW, (x+1)*mapW, y*mapH);
-        //     }
-        // }
-        // else{
-            this.canvasLayer.canvas.getContext("2d").clearRect(x*mapW, y*mapH, tw+1, th+1);
-            this.csv[y][x] = 0;
-        // }
+        this.canvasLayer.canvas.getContext("2d").clearRect(x*mapW, y*mapH, tw+1, th+1);
+        this.csv[y][x] = 0;
+        this.paintTiles()
     }
+
     paintTiles(){
         var loadmapW = this.width;
         var loadmapH = this.height;
@@ -299,6 +284,7 @@ class TiledLayer extends Layer{
         }
     }
 }
+ 
 function getKey(val){
     var map = editor.currentMap.selectedTilesetList;
     var b;
