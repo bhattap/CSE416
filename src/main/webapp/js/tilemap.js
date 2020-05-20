@@ -5,8 +5,8 @@ class Grid{
         this.ctx = canvas.getContext("2d");
         this.w = (width*tileW);
         this.h = (height*tileH);
-        this.canvasW = canvas.width = window.innerWidth;
-        this.canvasH = canvas.height = window.innerHeight;
+        this.canvasW = canvas.width = document.getElementsByClassName("surface tab")[0].offsetWidth;
+        this.canvasH = canvas.height = document.getElementsByClassName("surface tab")[0].offsetHeight;
         this.tileWidth = tileW;
         this.tileHeight = tileH;
         this.show = true;
@@ -19,50 +19,26 @@ class Grid{
     }
  
     showGrid(offsetX=0, offsetY=0){
+        var zoomFeature = editor.zoomFeature;
+
         this.ctx.clearRect(0,0,this.canvasW, this.canvasH);
-        let rows = this.w/this.tileWidth | 0;
-        let cols = this.h/this.tileHeight | 0;
+        let rows = (this.w*zoomFeature.ratioX)/(this.tileWidth*zoomFeature.ratioX) | 0;
+        let cols = (this.h*zoomFeature.ratioY)/(this.tileHeight*zoomFeature.ratioY) | 0;
         
         this.ctx.save();
         this.ctx.strokeStyle = "lightgrey";
         this.ctx.beginPath();
 
-        for(let y =offsetY ; y<=offsetY+(cols * this.tileHeight) ; y+=this.tileHeight) {
-            this.drawLine(offsetX, y, offsetX+this.w, y);
+        for(let y =offsetY ; y<=offsetY+(cols * (this.tileHeight*zoomFeature.ratioY)) ; y+=(this.tileHeight*zoomFeature.ratioY)) {
+            this.drawLine(offsetX, y, offsetX+(this.w*zoomFeature.ratioX), y);
         }
 
-        for(let x =offsetX ; x<=offsetX+(rows * this.tileWidth) ; x+=this.tileWidth) {
-            this.drawLine(x, offsetY, x, offsetY+this.h);
+        for(let x =offsetX ; x<=offsetX+(rows * (this.tileWidth*zoomFeature.ratioX)) ; x+=(this.tileWidth*zoomFeature.ratioX)) {
+            this.drawLine(x, offsetY, x, offsetY+(this.h*zoomFeature.ratioY));
         }
-
         this.ctx.stroke();
         this.ctx.beginPath();
-        this.ctx.strokeStyle = "black";
-        this.ctx.strokeRect(0, 0, cols, rows);
-        this.ctx.restore();
-        this.show = true;
-
-    }
-
-    zoomGrid(offsetX=0, offsetY=0){
-        this.ctx.clearRect(0,0,this.canvasW, this.canvasH);
-        let rows = (this.w*ratioX)/(this.tileWidth*ratioX) | 0;
-        let cols = (this.h*ratioY)/(this.tileHeight*ratioY) | 0;
-        
-        this.ctx.save();
         this.ctx.strokeStyle = "lightgrey";
-        this.ctx.beginPath();
-
-        for(let y =offsetY ; y<=offsetY+(cols * (this.tileHeight*ratioY)) ; y+=(this.tileHeight*ratioY)) {
-            this.drawLine(offsetX, y, offsetX+(this.w*ratioX), y);
-        }
-
-        for(let x =offsetX ; x<=offsetX+(rows * (this.tileWidth*ratioX)) ; x+=(this.tileWidth*ratioX)) {
-            this.drawLine(x, offsetY, x, offsetY+(this.h*ratioY));
-        }
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "black";
         this.ctx.strokeRect(0, 0, cols, rows);
         this.ctx.restore();
         this.show = true;
@@ -82,6 +58,34 @@ class Grid{
             this.show = true;
         }
     }
+
+    onScrollEvent(){
+        var gridCanvas = this.grid;
+        if(gridCanvas){
+            gridCanvas.addEventListener('mousewheel', this.zoomScroll);
+            gridCanvas.addEventListener('mouseover', this.setCenter);
+            gridCanvas.style.zIndex = 999;
+        }
+    }
+    offScrollEvent(){
+        var gridCanvas = this.grid;
+        if(gridCanvas){
+            gridCanvas.removeEventListener('mousewheel', this.zoomScroll);
+            gridCanvas.removeEventListener('mouseover', this.setCenter);
+            gridCanvas.style.zIndex = "";
+        }
+    }
+
+    zoomScroll(e){
+        if(e.deltaY == 150){ zoomOut();}
+        else if(e.deltaY == -150){zoomIn();}
+    }
+    setCenter(e){
+        editor.zoomFeature.centerX = e.clientX;
+        editor.zoomFeature.centerY = e.clientY;
+        console.log(editor.zoomFeature.centerX);
+      }
+
 
     onDragEvent(){
         var gridCanvas = this.grid;
@@ -110,13 +114,11 @@ class Grid{
             var layerList = editor.currentMap.LayerList;
             var topLayerIndex = layerList.size-1;
             var targetLayer = layerList.get(topLayerIndex);
-            if(ratioX == 1){
-                target.showGrid(x, y);
-            }
-            else{target.zoomGrid(x, y);
-            }
+            target.showGrid(x,y);
             targetLayer.canvasLayer.canvas.style.left = x+"px";
             targetLayer.canvasLayer.canvas.style.top = y+"px";
+            targetLayer.offsetX = parseInt(targetLayer.canvasLayer.canvas.style.left.replace("px", ""));
+            targetLayer.offsetY = parseInt(targetLayer.canvasLayer.canvas.style.top.replace("px", ""));
         }
     }
     dragEnd(e){
@@ -126,12 +128,12 @@ class Grid{
  var col;
  var row;
 class TiledCanvas{
-    constructor(width, height, tileW, tileH, layer){
+    constructor(width, height, tileW, tileH, layer, offsetX, offsetY){
         let canvas = document.createElement("canvas");
         canvas.id = layer.id;
         canvas.style.position = "position"; 
-        canvas.style.left = "0px";
-        canvas.style.top = "0px";
+        canvas.style.left = offsetX+ "px";
+        canvas.style.top = offsetY +"px";
         canvas.addEventListener("click", addEvent);
 
         this.w = canvas.width = (width*tileW);
@@ -177,9 +179,10 @@ function addEvent(){
 function zoomEvent(){
     var current = editor.currentMap;
     var topLayerIndex = current.LayerList.size-1;
+    var zoomFeature = editor.zoomFeature;
     var mousePos = getMousePos(current.LayerList.get(topLayerIndex).canvasLayer.canvas, event);
-    row = Math.floor(mousePos.x/(current.tileWidth*ratioY));
-    col = Math.floor(mousePos.y/(current.tileHeight*ratioX));
+    row = Math.floor(mousePos.x/(current.tileWidth*zoomFeature.ratioY));
+    col = Math.floor(mousePos.y/(current.tileHeight*zoomFeature.ratioX));
    var message = 'Mouse position: ' + row  + ',' + col;
    console.log(message);
    if(active == 0){

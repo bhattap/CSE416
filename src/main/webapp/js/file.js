@@ -10,19 +10,8 @@ function getTilesetwithName(nameT) {
     }
   }return tileset;
 }
-
-var active =1;
 var tsH;
 var tsW;
-function EraseTile(x) {
-if(active ==1){
-  x.className += " active";
-  active = 0;
-  }else{
-    x.className = x.className.replace(" active", "");
-    active=1;
-  }
-}
 
 function getTWTH(){
   var llist = editor.currentMap.LayerList;
@@ -209,22 +198,22 @@ function createTileSet(name, image, imgWidth, imgHeight, tileWidth, tileHeight, 
 
 var currentTileSetName;
 function newTabBtn() {
-  var tilesetName = document.getElementById("TilesetName").value;
-  var btn = document.createElement("BUTTON");
-  btn.setAttribute('class', 'tab-header2');
-  btn.innerHTML = tilesetName;
-  //document.body.appendChild(btn);
-  document.getElementById("newTab").appendChild(btn);
+    var tilesetName = document.getElementById("TilesetName").value;
+    var btn = document.createElement("BUTTON");
+    btn.setAttribute('class', 'tab-header2');
+    btn.innerHTML = tilesetName;
+    //document.body.appendChild(btn);
+    document.getElementById("newTab").appendChild(btn);
 
-  var workspace = document.createElement("div");
-  workspace.setAttribute('class', 'tilesetContent');
-  workspace.setAttribute('id', tilesetName);
-  workspace.setAttribute('style', 'max-height: 220px; max-width:560px; overflow: scroll;');
-  document.getElementById("tilesetWorkspace").appendChild(workspace);
+    var workspace = document.createElement("div");
+    workspace.setAttribute('class', 'tilesetContent');
+    workspace.setAttribute('id', tilesetName);
+    workspace.setAttribute('style', 'max-height: 220px; max-width:560px; overflow: scroll;');
+    document.getElementById("tilesetWorkspace").appendChild(workspace);
 
-  currentTileSetName = tilesetName;
-  document.getElementById("TilesetName").value = "";
-  closeWindow(createTileSetWindow);
+    currentTileSetName = tilesetName;
+    document.getElementById("TilesetName").value = "";
+    closeWindow(createTileSetWindow);
   }
 
   var single = 1;
@@ -282,6 +271,10 @@ function newTabBtn() {
     document.getElementById("tileSet-width").value = "";
     document.getElementById("spacing").value = "";
     }
+
+  function removeTab(tilesetName){
+    
+  }
 
   function createNewtab(name, tHeight, tWidth, spacing){
       var btn = document.createElement("BUTTON");
@@ -531,6 +524,7 @@ function loadFile(){
   if(!nameValidator(inputName)){
     alert("Invalid input. Please enter a valid name.");
   } else if(selectMap == true){
+    editor.clearWorkspace();
     loadAll_Map();
   } else if(selectTileset == true){
     (canLoadTileset(inputName)) ? loadAll_Tileset() : alert('This tileset is already loaded!');
@@ -584,7 +578,6 @@ async function loadAll_Map_Helper(loadMapJSON) {
 }
 
 function paintAllLayers(loadedLayers){
-  console.log(3);
   for (let [layerId, layer] of loadedLayers) {
     // paint a single layer
     layer.paintTiles();
@@ -738,7 +731,7 @@ function parseLayerJson(layers, map){
   layers.forEach(function(layer){
   var newLayer;
   if (layer.type === "TiledLayer"){ 
-    newLayer = new TiledLayer(layer.id, layer.name, map.mapWidth, map.mapHeight, map.id, map.tileWidth, map.tileHeight);
+    newLayer = new TiledLayer(layer.id, layer.name, map.mapWidth, map.mapHeight, map.id, map.tileWidth, map.tileHeight, layer.offsetX, layer.offsetY);
   } else {
     newLayer = new ObjectLayer(layer.id, layer.name, map.mapWidth, map.mapHeight);
   }
@@ -769,37 +762,36 @@ function parseTilesetJson(tileset, newImage){
 }
 
 async function loadtilesetPromise(tilesetNameIter) {
+  editor.resetTilesetList();
+  
   var username = editor.userName;
-  // for (let [tilesetName, firstgid] of tilesetNameIter) {
-    var tilesetNames = Array.from(tilesetNameIter.keys());
-    console.log(0);
-    var complete = await Promise.all(tilesetNames.map((tilesetName)=>loadAll_Tileset_Helper( {"name" : tilesetName, "username" : username})));
-    console.log(2);
-  // }
+  var tilesetNames = Array.from(tilesetNameIter.keys());
+
+  var complete = await Promise.all(tilesetNames.map((tilesetName)=>loadAll_Tileset_Helper( {"name" : tilesetName, "username" : username})));
    return Promise.resolve();
 }
 
+
 async function parseTilesetInMapJson(tilesetsInMap, map){
     var username = editor.userName;
-    loadTilesetInMap(tilesetsInMap, map.csvGid, map.selectedTilesetList);
-    var tilesetNameIter = map.selectedTilesetList;
+    var tilesetNameIter = loadTilesetInMap(tilesetsInMap, map.csvGid, map.selectedTilesetList);
     // var username = editor.userName;
     var complete = await loadtilesetPromise(tilesetNameIter);
     return complete;
   // return map.selectedTilesetList;
 }
 
- 
 
 function loadTilesetInMap(tilesetsInMap, gidList, tilesetList){
   tilesetsInMap.forEach(function(paintedtile){
     var tilesetName = paintedtile.tilesetName;
     var firstgid = paintedtile.firstgid;
     gidList.set(paintedtile.globalId, firstgid);
-    if(!tilesetList.has(tilesetName)){
+    if(!tilesetList.has(tilesetName)){ // 
       tilesetList.set(tilesetName, firstgid);
     }
   });
+  return tilesetList;
 }
 
 
@@ -854,7 +846,9 @@ function getLayerJSON(LayerData){
       "mapName" : layer.mapName,
       "orderInMap" : layer.order,
       "type" : layer.type,
-      "csv" : convertArrayToCSV(layer.csv)
+      "csv" : convertArrayToCSV(layer.csv),
+      "offsetX" : layer.offsetX,
+      "offsetY" : layer.offsetY
     });
     
     // let layerPropData = layer.layerProp;

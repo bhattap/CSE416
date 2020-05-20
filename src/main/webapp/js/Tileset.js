@@ -1,7 +1,7 @@
 class Tileset{
 	constructor(name, image, imgWidth, imgHeight, tileWidth, tileHeight){
 	   this.name = name;
-	   this.src = "./src/main/resources/tileset_src/" + name +".png";
+	   this.src = "src/main/webapp/tileset_src/" + name +".png";
 	   this.image = image;
        this.imgWidth = imgWidth;
        this.imgHeight = imgHeight;

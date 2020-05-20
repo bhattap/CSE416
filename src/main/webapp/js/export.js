@@ -146,8 +146,9 @@ function SingleTilesetXML(tileset)
 
 function screenshot_map(){
     var canvas = document.createElement("canvas");
-    canvas.width = editor.
-    canvas.height = 
+    var targetMap = editor.currentMap;
+    canvas.width = targetMap.tileWidth * targetMap.mapWidth;
+    canvas.height = tagetMap.tileHeight * targetMap.mapHeight;
 }
 
 

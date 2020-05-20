@@ -233,26 +233,29 @@ class Layer{
 }
 
 class TiledLayer extends Layer{
-    constructor(id, name, width, height, mapName, tileW, tileH){
+    constructor(id, name, width, height, mapName, tileW, tileH, offsetX=0, offsetY=0){
         super(id, name, width, height, mapName);
         this.tileW = tileW;
         this.tileH = tileH;
         this.csv = Array.from(Array((width)), () => Array((height)).fill(0));
         this.type = "TiledLayer";
-        this.canvasLayer = new TiledCanvas(width, height, tileW, tileH, this);
+        this.canvasLayer = new TiledCanvas(width, height, tileW, tileH, this, offsetX, offsetY);
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
     }
 
     fillTiles(x, y, canvas){
         tileList = editor.currentTileset.tileList;
         var imgg = new Image();
         imgg.src = editor.currentTileset.image.src;
-        // imgg.src = editor.currentTileset.tileList[index].src;
-        this.canvasLayer.canvas.getContext("2d").clearRect(x*editor.currentMap.tileWidth, y*editor.currentMap.tileHeight, editor.currentMap.tileWidth, editor.currentMap.tileHeight);
-        this.canvasLayer.canvas.getContext("2d").drawImage(imgg,tileList[index].startX, tileList[index].startY,tileList[index].tileWidth, tileList[index].tileHeight, this.tileW*x, this.tileH*y, tileList[index].tileWidth, tileList[index].tileHeight );
+        this.canvasLayer.canvas.getContext("2d").clearRect(0,0, editor.currentMap.mapWidth*editor.currentMap.tileWidth, editor.currentMap.mapHeight*editor.currentMap.tileWidth);
+        // this.canvasLayer.canvas.getContext("2d").clearRect(x*editor.currentMap.tileWidth, y*editor.currentMap.tileHeight, editor.currentMap.tileWidth, editor.currentMap.tileHeight);
+        // this.canvasLayer.canvas.getContext("2d").drawImage(imgg,tileList[index].startX, tileList[index].startY,tileList[index].tileWidth, tileList[index].tileHeight, this.tileW*x, this.tileH*y, tileList[index].tileWidth, tileList[index].tileHeight );
         editor.currentMap.updateNextGid(editor.currentTileset.name, editor.currentTileset.tilecount);
         var ggid = Number(editor.currentMap.selectedTilesetList.get(editor.currentTileset.name));
         this.csv[y][x] = index + ggid;
         editor.currentMap.updateCSVGid(index + ggid, ggid);
+        this.paintTiles()
     }
 
     eraseTile(x, y, canvas,th, tw){
@@ -277,6 +280,7 @@ class TiledLayer extends Layer{
                     TS = getTilesetwithName(Tsname);
                     var localID = this.csv[i][j] - firstgid;
                     var loadedImg = new Image();
+                    console.log(TS);
                     loadedImg.src = TS.image.src;
                     ctx.drawImage(loadedImg, TS.tileList[localID].startX, TS.tileList[localID].startY, TS.tileWidth, TS.tileHeight,j*this.tileW, i*this.tileH, TS.tileWidth, TS.tileHeight);
                 }
