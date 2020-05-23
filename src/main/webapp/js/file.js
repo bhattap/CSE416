@@ -1,9 +1,9 @@
 function getTilesetwithName(nameT) {
   var list = editor.loadedTilesetList;
-  console.log("check ");
-  console.log(list);
+  // console.log("check ");
+  // console.log(list);
   var tileset;
-  console.log("function callsed "+list.length);
+  // console.log("function callsed "+list.length);
   for(var i=0; i<list.length; i++){
     if(list[i].name == nameT){
       tileset = list[i];
@@ -52,6 +52,7 @@ let createLayerWindow = document.querySelector("#create-layer-window");
 let aboutWindow = document.querySelector("#about");
 let saveasWindow = document.querySelector("#saveas");
 let loadWindow = document.querySelector("#loadFile");
+let resizeMapWindow = document.querySelector("#resize-map-window");
 
 function newMap() {  
 showWindow(createMapWindow);
@@ -59,6 +60,10 @@ showWindow(createMapWindow);
 
 function newTileSet() {  
 showWindow(createTileSetWindow);
+}
+
+function resizeM(){
+  showWindow(resizeMapWindow);
 }
 
 function newLayer() {  
@@ -71,6 +76,10 @@ function cancelCreateMap() {
 
 function cancelCreateTileSet() {  
   closeWindow(createTileSetWindow);
+}
+
+function cancelResizeMap(){
+  closeWindow(resizeMapWindow);
 }
 
 function cancelCreateLayer() {  
@@ -103,11 +112,6 @@ function cancelAbout() {
 
 
 function loadMap(map){
-  console.log(map);
-  if(editor.currentMap){// if currentMap is existed
-    console.log("run");
-    editor.clearWorkspace();
-  }
   editor.grid= new Grid(map.mapWidth, map.mapHeight, map.tileWidth, map.tileHeight);
   editor.grid.showGrid();
   editor.currentMap = map;
@@ -115,11 +119,37 @@ function loadMap(map){
   showList(editor.currentMap.LayerList);
 }
 
-var gridVisIcon = document.getElementById("gridVisability");
-  gridVisIcon.addEventListener("click", function(){
-  editor.grid.showOrHide();
-});
+function resizeMap(){
+  var resizeW = Number(document.getElementById("resize-width").value);
+  var resizeH = Number(document.getElementById("resize-height").value);
+  var oldRow = editor.currentMap.mapWidth;
+  var oldCol = editor.currentMap.mapWidth;
+  var csvs = resizeMap_Helper(resizeW, resizeH); // return csvs = ['oldCSVs', 'newCSVs']
+  transactionManager.doAction(new ResizeAction(resizeW, resizeH, oldRow , oldCol, csvs));
+}
 
+function resizeMap_Helper(resizeW, resizeH, transaction = false){
+  editor.currentMap.resize(resizeW, resizeH);
+  var csvs = {'oldCSVs' : [], 'newCSVs' : []};
+  var layers = editor.currentMap.LayerList;
+  var topLayerIndex = layers.size - 1;
+ 
+  for(var i=0; i<layers.size; i++){
+    var layer = layers.get(i);
+    layer.canvasLayer.removeEvent();
+
+    if( transaction == false ) { layer.updateResize(resizeW, resizeH, csvs);} 
+    else { // if this method is call by transaction manager
+      layer.updateResize_helper(resizeW, resizeH);
+    }
+
+    if(i == topLayerIndex){
+      editor.grid.resize(resizeW, resizeH, layer.offsetX, layer.offsetY);
+    }
+  }
+  closeWindow(resizeMapWindow);
+  return csvs;
+}
 
 function createMap() {
   let mapType = "top";
@@ -145,6 +175,10 @@ function createMap() {
         alert("Invalid input. Please enter integer values for map width/height and tile width/height.");
         return;
     }
+
+  if(editor.currentMap){// if currentMap is existed
+     editor.clearWorkspace();
+  }
 
   var mapWidth = parseInt(document.getElementById("map-width").value);
   var mapHeight = parseInt(document.getElementById("map-height").value);
@@ -332,8 +366,7 @@ function newTabBtn() {
         var mousePos = getMousePos(getCanvas, event);
         var row = Math.floor(mousePos.x/tilesetW);
         var col = Math.floor(mousePos.y/tilesetH);
-        index = getIndex(col, row);
-        console.log("index "+index +" img "+currentTileSetName);
+        editor.tileIndex = getIndex(col, row);
     });
      }
 
@@ -404,7 +437,7 @@ function newTabBtn() {
      openTilesetTab(target, currentTileSetName); 
      }
 
-var index;
+// var index;
       function drawTile(){
         var tile;
         var startXPos = 0;
@@ -464,22 +497,20 @@ var index;
 async function saveAll_Tileset(newTileset){
   let jsonTileset = getTilesetJSON(newTileset);
   let jsonImage = await getImageJSON(newTileset);
-  console.log(jsonImage);
   saveDataToDB(jsonTileset, "save_tileset");
   saveDataToDB(jsonImage, "save_image");
 }
 
 function saveAll_Map(newMap, newLayers, mapName){
   let jsonMap = getMapJSON(newMap, mapName);
-  let jsonLayers = getLayerJSON(newLayers);
+  let jsonLayers = getLayerJSON(newLayers, mapName);
 
   let saveMapResult = saveDataToDB(jsonMap, "save_map");
   let saveLayerResult = saveDataToDB(jsonLayers["layers"], "save_layer");
   // let saveLayerPropResult = saveDataToDB(jsonLayers["layerProps"], "save_layerProp");
 
   if(newMap.csvGid.size != 0){
-    let jsonTilsetInMap = getTilesetInMapJSON(newMap);
-    console.log(jsonTilsetInMap);
+    let jsonTilsetInMap = getTilesetInMapJSON(newMap, mapName);
     let saveTilesetInMapResult = saveDataToDB(jsonTilsetInMap, "save_tilesetInMap");
   }
   //$.when(saveMapResult, saveLayerResult, saveLayerPropResult).then(function(){
@@ -495,6 +526,7 @@ function saveAll_Map(newMap, newLayers, mapName){
 
 function saveAsMap(){
   var map = editor.currentMap;
+  var currentMapName = editor.currentMap.name;
   if (map == null){
     alert("There is no map to save");
   } else{
@@ -505,6 +537,7 @@ function saveAsMap(){
     }
     saveAll_Map(map, map.LayerList, saveAsName);
   }
+  editor.currentMap = currentMapName;
   closeWindow(saveasWindow);
 }
 
@@ -554,13 +587,16 @@ function canLoadTileset(inputName){
  }
 
 async function loadAll_Map_Helper(loadMapJSON) {
+  if(editor.currentMap){
+    editor.clearWorkspace();
+  }
     loadDataFromDB(loadMapJSON, "load_map")
         .then(jsonData => {
             var loadedMap = parseMapJson(jsonData.map);
 
             parseLayerJson(jsonData.layers, loadedMap);
-
             loadMap(loadedMap);
+
             // parseTilesetInMapJson(jsonData.tilesetsInMap, loadedMap);
             // var tilesetNameIter = loadedMap.selectedTilesetList;
             // var username = editor.userName;
@@ -621,7 +657,6 @@ function loadAll_Tileset(){
 }
 
 var currentTileID;
-
 function removeFile() {
   var d = document.getElementById(currentTileSetName);
   var olddiv = document.getElementById(currentTileID);
@@ -762,8 +797,6 @@ function parseTilesetJson(tileset, newImage){
 }
 
 async function loadtilesetPromise(tilesetNameIter) {
-  editor.resetTilesetList();
-  
   var username = editor.userName;
   var tilesetNames = Array.from(tilesetNameIter.keys());
 
@@ -826,16 +859,18 @@ function convertCSVToArray(csv, csvArray, size){
     let rowArray = new Array(size);
     // each row in rowArray
     // 1. turns into String (like "0,0,0,0,0,0,0")
-    rowArray = rowText.split(',');
-    // 2. turns into integers
-    rowArray = rowArray.map(num => parseInt(num, 10));
-    // 3. push to the return variable
-    result.push(rowArray);
+    if(rowText != ""){
+      rowArray = rowText.split(',');
+      // 2. turns into integers
+      rowArray = rowArray.map(num => parseInt(num, 10));
+      // 3. push to the return variable
+      result.push(rowArray);
+    }
   });
   return result;
 }
 
-function getLayerJSON(LayerData){
+function getLayerJSON(LayerData, mapName){
   let layers = [];
   // let layerProps = [];
 
@@ -843,7 +878,7 @@ function getLayerJSON(LayerData){
     layers.push({
       "id" : layer.id,
       "name" : layer.name,
-      "mapName" : layer.mapName,
+      "mapName" : mapName,
       "orderInMap" : layer.order,
       "type" : layer.type,
       "csv" : convertArrayToCSV(layer.csv),
@@ -883,13 +918,13 @@ function getTilesetJSON(tileset){
   }
 }
 
-function getTilesetInMapJSON(mapData){
+function getTilesetInMapJSON(mapData, mapName){
   let tilesetsInMap = [];
   let gidList = mapData.csvGid;
 
   for (var [gid, fristgid] of gidList) {
     tilesetsInMap.push({
-      "mapName" : mapData.id,
+      "mapName" : mapName,
       "tilesetName" : getKey(fristgid),
       "username": editor.userName,
       "firstgid" : fristgid,

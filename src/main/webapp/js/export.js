@@ -148,11 +148,39 @@ function SingleTilesetXML(tileset)
     return doc;
 }
 
-function screenshot_map(){
-    var canvas = document.createElement("canvas");
-    var targetMap = editor.currentMap;
-    canvas.width = targetMap.tileWidth * targetMap.mapWidth;
-    canvas.height = tagetMap.tileHeight * targetMap.mapHeight;
+
+async function screenshot_map(){
+    if(editor.currentMap){
+        var canvas = document.createElement("canvas");
+        var targetMap = editor.currentMap;
+        var targetLayerList = targetMap.LayerList;
+        canvas.width = targetMap.tileWidth * targetMap.mapWidth;
+        canvas.height = targetMap.tileHeight * targetMap.mapHeight;
+        // await Promise.all(targetLayerList.map((layer)=>convertCanvasToImg(canvas, layer.canvasLayer.canvas)));
+        for (let [layerId, layer] of targetLayerList) {
+            await convertCanvasToImg(canvas, layer.canvasLayer.canvas);
+        }
+    } else {
+        alert("There is no map to export image!");
+    }
+}
+function getLayerImage(layerImgScr, width, height){
+    return new Promise((resolve, reject)=> {
+        var layerImg = new Image(width, height);
+        layerImg.onload = function(){
+            resolve(layerImg);
+        };
+        layerImg.src = layerImgScr;
+    });
 }
 
-
+function convertCanvasToImg(canvas, layerCanvas, mime = "image/png"){
+    new Promise ((resolve) => {
+       resolve(layerCanvas.toDataURL(mime));
+    }).then((layerImgScr) => {
+        return getLayerImage(layerImgScr, layerCanvas.width, layerCanvas.height);
+    }).then((layerImg) => {
+        canvas.getContext('2d').drawImage(layerImg, 0, 0);
+    });
+    return Promise.resolve('compelet');
+  }

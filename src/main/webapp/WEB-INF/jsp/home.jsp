@@ -25,17 +25,22 @@
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" /> -->
   <div class="whole_workspace">
     <section id="side-bar">
-      <a href="/my-profile" id="toggle-home">
+      <a href="/my-profile" id="toggle-home" title ="Go to home page">
         <button id="homeButton"><i class="fa fa-home" tooltip = "toggle-home" flow = "right"></i></button>
       </a>
       <div class ="vertical-align">
         <ul id="tool-menu">
-          <li data ="view" id="tool-view">
+          <li data ="view" id="tool-view" title ="Show grid" onclick ="editor.grid.showOrHide()">
             <button id="gridVisability"><i class="fa fa-eye" aria-hidden="true"></i></button>
-            <!-- <span class="tooltiptext">Control view</span> -->
           </li>
           <!-- <li data ="history" id="tool-history">
             <img src="img/tool/history.png">
+          </li> -->
+          <!-- <li data ="undo" id="tool-undo" title ="Undo" onclick = "transactionManager.undo()">
+            <button id="undoButton" disabled><i class="fas fa-undo-alt" aria-hidden="true"></i></button>
+          </li>
+          <li data ="redo" id="tool-redo" title ="Redo" onclick = "transactionManager.redo()">
+            <button id="redoButton" disabled><i class="fas fa-redo-alt" aria-hidden="true"></i></button>
           </li> -->
         </ul>
       </div>
@@ -63,17 +68,23 @@
                 <a href="#" onclick ="editor.clearWorkspace()">Clear map</a>
               </div>
             </div>
-            <!-- <div class="dropdown">
+            <div class="dropdown">
+              <button class="dropbtn">Map</button>
+              <div class="dropdown-content">
+                <a href="#" onclick="resizeM()">Resize Map</a>
+              </div>
+            </div>
+            <div class="dropdown">
                 <button class="dropbtn">Edit</button>
                 <div class="dropdown-content">
                   <a href="#">Undo</a>
                   <a href="#">Redo</a>
-                  <a href="#">Cut</a>
-                  <a href="#">Copy</a>
-                  <a href="#">Paste</a>
-                  <a href="#">Delete</a>
+                  <a href="#"onclick="cut()">Cut</a>
+                  <a href="#"onclick="copy()">Copy</a>
+                  <a href="#"onclick="paste()">Paste</a>
+                  <a href="#"onclick="Delete()">Delete</a>
                 </div>
-              </div> -->
+              </div>
               <div class="dropdown">
                   <button class="dropbtn">Layers</button>
                   <div class="dropdown-content">
@@ -99,7 +110,6 @@
                   <div class="dropdown">
                       <button class="dropbtn">About</button>
                       <div class="dropdown-content">
-                        <!-- <a href="#">User Manual</a> -->
                         <a href="#" onclick="aboutLB()">About Level Builder</a>
                       </div>
                   </div>
@@ -108,28 +118,29 @@
         <div class="scene">
           <div class="tab-header">Map editor</div>
           <div class="editor-tools">
-            <!-- <div class="surface btn" id="btn-editor-cursor"
-              title="Selector tool - select objects to edit their properties" onclick="selectEditorTool('cursor')">
-              <i class="fa fa-mouse-pointer"></i></div> -->
-            <!-- <div class="surface btn" id="btn-editor-brush" title="Brush tool - paint tiles"
-              onclick="selectEditorTool('brush')"><i class="fa fa-paint-brush"></i></div> -->
-            <div class="surface btn" id="eraser" title="Eraser tool - erase tile data"
-              onclick="editFunction(this, 'erase')"><i class="fa fa-eraser"></i></div>
-            <div class="surface btn" id="btn-editor-move" value = "doNotMove"
-              title="Drag tool - pan around the map editor, you can also hold down (alt)"
-              onclick="editFunction(this, 'move')"><i class="fa fa-arrows"></i></div>
-            <div class="surface btn" id="btn-editor-zout" title="Zoom Scroll" onclick="editFunction(this, 'zoom')">
-              <i class="fas fa-search-plus"></i></div>
-            <!-- <div class="surface btn" id="btn-editor-zin" title="(+) Zoom in" onclick="zoomIn()"><i
-                class="fa fa-search-plus"></i></div> -->
+            <div class="surface btn" id="btn-editor-cursor" title="Edit Tile" onclick="Select(this)"><i class="fas fa-edit"></i></div>
+          </div>
+            <div class="editor-tools">
+            <div id="Icons"  style="display:block">
+              <div class="surface btn" id="eraser" title="Erase tile" onclick="editFunction(this, 'erase')"><i class="fa fa-eraser"></i></div>
+              <div class="surface btn" id="btn-editor-move" value = "doNotMove" title="Drag" onclick="editFunction(this, 'move')"><i class="fa fa-arrows"></i></div>
+              <div class="surface btn" id="btn-editor-zout" title="Zoom in" onclick="zoomIn()"><i class="fas fa-search-plus"></i></div>
+              <div class="surface btn" id="btn-editor-zin" title="Zoom out" onclick="zoomOut()"><i class="fas fa-search-minus"></i></div>
+          </div>
+            <div id="EditIcons"  style="display:none">
+              <div class="surface btn" id="btn-editor-cut" title="Cut" onclick="cut()"><i class="fas fa-cut"></i></div>
+              <div class="surface btn" id="btn-editor-copy" title="Copy" onclick="copy()"><i class="far fa-copy"></i></div>
+              <div class="surface btn" id="btn-editor-paste" title="Paste" onclick="paste()"><i class="fas fa-paste"></i></div>
+              <div class="surface btn" id="btn-editor-delete" title="Delete" onclick="Delete()"><i class="fas fa-trash-alt"></i></div>
+          </div>
+                  
           </div>
           <div class="surface tab">
             <div class="editor-container">
-              
-              <div class="surface editor-border" style =" overflow: scroll;">
+              <!-- <div class="surface editor-border"> -->
                 <div class = "Map">
                   <div class = "Grid"></div>
-                </div>
+                <!-- </div> -->
               </div>
             </div>
           </div>
@@ -252,6 +263,29 @@
         </div> -->
       </div>
 
+      <div class="window surface" id="resize-map-window" style="z-index : 1000;">
+        <div class="window-title-bar">
+          <h4>Resize Map</h4>
+          <div class="surface btn" onclick="cancelResizeMap()"><i class="fa fa-close"></i></div>
+        </div>
+        <div class="window-body">
+          <div class="newline"></div>
+           <p>Offset X: 0</p>
+           <p>Offset Y: 0</p>
+          <div class="input-header">Size</div>
+          <div class="input-row">
+            <label for="resize-width">Width :</label>
+            <label><input type="text" placeholder="eg. 7" id="resize-width"/> tiles</label>
+            <label for="resize-height">Height:</label>
+            <label><input type="text" placeholder="eg. 7" id="resize-height"/>tiles</label>
+          </div>
+        </div>
+        <div class="window-actions">
+          <div class="surface btn" onclick="cancelResizeMap()">Cancel</div>
+          <div class="surface btn" onclick="resizeMap()">OK</div>
+        </div>
+      </div>
+
       <div class="window surface" id="saveas" style="z-index : 1000;">
           <div class="window-title-bar">
             <h4>Save As</h4>
@@ -350,114 +384,41 @@
             <div class="surface btn" onclick="createLayer()">OK</div>
           </div>
         </div>
-<script>
-let editor;
 
 
-class ZoomFeature{
-  constructor(){
-    this.zoomEventOn = false;
-    this.canScaleX = 2;
-    this.canScaleY = 2;
-    this.zoomcount =0;
-    this.ratioX = 1;
-    this.ratioY = 1;
-    this.scaleX = 1;
-    this.scaleY = 1;
-    this.centerX = window.innerWidth/2;
-    this.centerY = window.innerHeight/2;
-  }
-
-}
-
-class Editor{
-   constructor(){
-    this.currentMap;
-    this.currentTileset;
-    this.currentLayer;
-    this.loadedMapList = new Array();
-    this.loadedTilesetList = new Array();
-    this.userName;
-    this.grid;
-    this.selectedLayerId;
-    this.zoomFeature = new ZoomFeature();
-   }
-   
-   loadTileset(tileset){
-      this.loadedTilesetList.push(tileset);
-      this.currentTileset = tileset;
-   }
-   resetTilesetList(){
-    this.loadedTilesetList = new Array();
-    var node = document.getElementById('newTab').innerHTML = "";
-   }
-
-   clearWorkspace(){
-    var mapNode = document.getElementsByClassName("Map")[0];
-    mapNode.innerText ="";
-    var gridNode = document.createElement("div");
-    gridNode.className = "Grid";
-    mapNode.appendChild(gridNode);
-    if(this.currentMap){
-      this.currentMap = null;
-      this.currentLayer = null;
-      this.selectedLayerId = null;
-      this.grid = null;
-    }
-  }
-}
-
-function handleLoadMapRequest(mapName){
-    var loadMapJSON = {"mapName" : mapName};
-    loadAll_Map_Helper(loadMapJSON);
-
-}
-
-function handleLoadTilesetRequest(tileSetName, username){
-    var loadTilesetJSON = {"name" : tileSetName, "username" : username};
-    loadAll_Tileset_Helper(loadTilesetJSON);
-}
-
-function handleExportMapRequest(mapName){
-    var loadMapJSON = {"mapName": mapName};
-    loadAll_Map_Helper(loadMapJSON);
-    setTimeout(exportMap, 2000); //wait until map has loaded to start exporting
-}
-
-function handleExportTilesetRequest(tileSetName, username){
-    var loadTilesetJSON = {"name" : tileSetName, "username" : username};
-    loadAll_Tileset_Helper(loadTilesetJSON);
-    setTimeout(exportTileset, 2000, tileSetName); //wait until tileset has loaded to start exporting
-}
-
-window.onload = (event) => {
-  editor = new Editor();
-  editor.userName = '${username}';
-  console.log("create editor class");
-
-  //If parameters exist in the URL, handle request
-  var queryString = window.location.search;
-  var urlParams = new URLSearchParams(queryString);
-  if(urlParams.has('load_map')) {
-      handleLoadMapRequest(urlParams.get('load_map'));
-  } else if(urlParams.has('load_tileset') && urlParams.has('owned_by')) {
-      handleLoadTilesetRequest(urlParams.get('load_tileset'), urlParams.get('owned_by'));
-  } else if(urlParams.has('export_map')) {
-      handleExportMapRequest(urlParams.get('export_map'));
-  } else if(urlParams.has('export_tileset') && urlParams.has('owned_by')) {
-      handleExportTilesetRequest(urlParams.get('export_tileset'), urlParams.get('owned_by'));
-  }
-};
-
-</script>
 <script type="text/javascript" src="js/Map.js"></script>
-<script type="text/javascript" src="js/Tileset.js"></script>
+<script type="text/javascript" src="js/tileset.js"></script>
 <script type="text/javascript" src="js/tilemap.js"></script>
 <script type="text/javascript" src="js/editor.js"></script>
+<script type="text/javascript" src="js/transaction.js"></script>
 <script type="text/javascript" src="js/export.js"></script>
-<!-- <script type="text/javascript" src="js/npm.js"></script> -->
 <script type="text/javascript" src="js/FileSaver.js"></script>
 <script type="text/javascript" src="js/file.js"></script>
+<script>
+  let editor;
+  let transactionManager;
+
+  window.onload = (event) => {
+   editor = new Editor();
+   transactionManager = new Transaction();
+   
+   editor.userName = '${username}';
+   console.log("create editor class");
+ 
+   //If parameters exist in the URL, handle request
+   var queryString = window.location.search;
+   var urlParams = new URLSearchParams(queryString);
+   if(urlParams.has('load_map')) {
+       handleLoadMapRequest(urlParams.get('load_map'));
+   } else if(urlParams.has('load_tileset') && urlParams.has('owned_by')) {
+       handleLoadTilesetRequest(urlParams.get('load_tileset'), urlParams.get('owned_by'));
+   } else if(urlParams.has('export_map')) {
+       handleExportMapRequest(urlParams.get('export_map'));
+   } else if(urlParams.has('export_tileset') && urlParams.has('owned_by')) {
+       handleExportTilesetRequest(urlParams.get('export_tileset'), urlParams.get('owned_by'));
+   }
+ };
+</script>
 
 </body>
 </html>

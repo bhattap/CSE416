@@ -10,14 +10,17 @@ canvas {
     float: right;
   }
   
-#gridVisability{
+#gridVisability, #undoButton , #redoButton{
   background-color: #292c31;
   border: 5px solid transparent;
   border-left: 6px solid transparent;
-  transition: all .2s linear;
-  /* display: block; */
+  transition: all .1s linear;
+  cursor: pointer;
+  font-size: 15px;
+  user-select: none;
+  color : whitesmoke;
+  float: right;
 }
-
 
 #homeButton{
   background-color: #292c31;
@@ -25,15 +28,27 @@ canvas {
   border-left: 8px solid transparent;
   border-top: 19px solid transparent;
   transition: all .2s linear;
+  font-size: 15px;
+  user-select: none;
+  color : whitesmoke;
+  float: right;
   /* display: block; */
 }
+
+#homeButton:hover, #gridVisability:hover, 
+#undoButton:hover, #redoButton:hover{
+  color : white;
+  opacity: 0.5;
+}
+
+
+#undoButton:disabled , #redoButton:disabled {
+  color : white;
+  opacity: 0.2;
+  cursor : default;
+}
+
 .fa {
-    font-size: 15px;
-    cursor: pointer;
-    user-select: none;
-    color : whitesmoke;
-    float: right;
-  }
-.fa:hover {
-    color : white;
-  }
+  float: right;
+}
+  

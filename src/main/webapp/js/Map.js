@@ -13,6 +13,10 @@ class TiledMap{
         this.selectedTilesetList = new Map(); // key : tileset name / value : firstGid
         this.csvGid = new Map(); // key: globalID / value: firstGid
     }
+    resize(x, y){
+        this.mapWidth = x;
+        this.mapHeight = y;
+    }
     updateNextGid(selectedName, size){
         if(this.selectedTilesetList.size ==0){
             this.selectedTilesetList.set(selectedName,this.nextgid); 
@@ -39,15 +43,20 @@ class TiledMap{
     addLayer(layerType, name){
         var newLayer;
         var id = idL + 1;
-        console.log("idL "+ idL + "id: " +id);
         if (layerType === "tileLayer"){ 
-          newLayer = new TiledLayer(id, name, this.mapWidth, this.mapHeight, this.id, this.tileWidth, this.tileHeight);
-          newLayer.order = editor.currentMap.LayerList.size;
-         
+            newLayer = new TiledLayer(id, name, this.mapWidth, this.mapHeight, this.id, this.tileWidth, this.tileHeight);
         } else {
-          newLayer = new ObjectLayer(id, name, this.mapWidth, this.mapHeight);
+            newLayer = new ObjectLayer(id, name, this.mapWidth, this.mapHeight);
         }
-        // newLayer.canvas.style.zIndex = 0;
+        newLayer.order = editor.currentMap.LayerList.size;
+        this.updateLayerList(newLayer);
+    }
+
+    updateLayerList(newLayer, transaction = false){
+        if(!transaction){
+            transactionManager.doAction(new CreateLayerAction(newLayer.duplicateLayer(newLayer.id)));
+            // transactionManager.doAction(new CreateLayerAction(newLayer.duplicateLayer(newLayer.id)));
+        }
         this.LayerList.set(this.LayerList.size, newLayer);
         idL = idL + 1;
     }
@@ -107,18 +116,22 @@ class TiledMap{
             alert("Cannot upper layer");
         }
     }
+
 }
 
-function createNewLayer(layerType, name) {
+function createNewLayer(layerType, name) { 
    var currentMap = editor.currentMap;
    currentMap.addLayer(layerType, name);
-    var layers = currentMap.LayerList;
+   var layers = currentMap.LayerList;
     showList(layers);
 }
 
-function removeLayer(){
-    var targetId = editor.selectedLayerId;
+function removeLayer(targetId = editor.selectedLayerId, transaction = false){
     if(targetId != null){
+        if(!transaction){
+            var targetlayer = editor.currentMap.LayerList.get(targetId);
+            transactionManager.doAction(new DeleteLayerAction(targetlayer.duplicateLayer(targetlayer.id)));
+        }
         editor.currentMap.removeLayer(targetId);
         showList(editor.currentMap.LayerList);
     } else {
@@ -141,6 +154,7 @@ function showList(Llist){ // Llist == layer lists in current Map
     var topLayerIndex = Llist.size-1;
     for(var i=topLayerIndex; i>-1; i--){
         var layer = Llist.get(i);
+        console.log(layer);
         var li = document.createElement("li");
         li.id = layer.order;
         var inputValue = layer.name;
@@ -227,9 +241,6 @@ class Layer{
         this.tilesets = new Array();
     }
 
-   // clone(){
-
-    //}
 }
 
 class TiledLayer extends Layer{
@@ -244,26 +255,97 @@ class TiledLayer extends Layer{
         this.offsetY = offsetY;
     }
 
-    fillTiles(x, y, canvas){
+    duplicateLayer(id){
+        var mapName = editor.currentMap.id;
+        return new TiledLayer(id, this.name, this.mapWidth, this.mapHeight, mapName, this.tileWidth, this.tileHeight, this.offsetX, this.offsetY);
+    }
+
+    async updateResize(x,y, csvs){
+        csvs['oldCSVs'].push(this.csv);
+        createNewCSV(this, x, y, x*y).then(newCSV => {
+            csvs['newCSVs'].push(newCSV);
+            this.updateResize_helper(x, y);
+        });
+    }
+
+    updateResize_helper(x, y){
+        this.canvasLayer.resize(x, y, this.tileW, this.tileH);
+        this.width = x;
+        this.height = y;
+        this.paintTiles();
+        this.canvasLayer.addEventAgain();
+    }
+
+    fillTiles(x, y, canvas = this.canvasLayer.canvas, transaction = false, csvGid = 0){
+        var map = editor.currentMap;
         tileList = editor.currentTileset.tileList;
         var imgg = new Image();
         imgg.src = editor.currentTileset.image.src;
-        this.canvasLayer.canvas.getContext("2d").clearRect(0,0, editor.currentMap.mapWidth*editor.currentMap.tileWidth, editor.currentMap.mapHeight*editor.currentMap.tileWidth);
+        var selectedtileset = editor.currentTileset;
+        var index = editor.tileIndex;
+        canvas.getContext("2d").clearRect(0,0, map.mapWidth*map.tileWidth, map.mapHeight*map.tileWidth);
         // this.canvasLayer.canvas.getContext("2d").clearRect(x*editor.currentMap.tileWidth, y*editor.currentMap.tileHeight, editor.currentMap.tileWidth, editor.currentMap.tileHeight);
         // this.canvasLayer.canvas.getContext("2d").drawImage(imgg,tileList[index].startX, tileList[index].startY,tileList[index].tileWidth, tileList[index].tileHeight, this.tileW*x, this.tileH*y, tileList[index].tileWidth, tileList[index].tileHeight );
-        editor.currentMap.updateNextGid(editor.currentTileset.name, editor.currentTileset.tilecount);
-        var ggid = Number(editor.currentMap.selectedTilesetList.get(editor.currentTileset.name));
-        this.csv[y][x] = index + ggid;
-        editor.currentMap.updateCSVGid(index + ggid, ggid);
-        this.paintTiles()
+        if(!transaction){
+            map.updateNextGid(selectedtileset.name, selectedtileset.tilecount);
+            var ggid = Number(map.selectedTilesetList.get(selectedtileset.name));
+            csvGid = index + ggid;
+            map.updateCSVGid(csvGid, ggid);
+            // var llist = editor.currentMap.LayerList;
+            // var layer = llist.get(llist.size-1);
+            // var csvTile = layer.canvasLayer.getCSVvalue();
+            // var a = getKey(editor.currentMap.csvGid.get(editor.cutcopyTileGID));
+            // var tilesett = getTilesetwithName(a);
+            // tsH = tilesett.tileHeight;
+            // tsW = tilesett.tileWidth;
+
+    // transactionManager.doAction(new PaintAction(currentLayer, row, col, editor.cutcopyTileGID, tsH, tsW));
+   
+        }
+        this.csv[y][x] = csvGid;
+
+        this.paintTiles();
     }
 
-    eraseTile(x, y, canvas,th, tw){
+    selectTile(x, y, canvas, th, tw){
         var mapH = editor.currentMap.tileHeight;
         var mapW = editor.currentMap.tileWidth;
-        this.canvasLayer.canvas.getContext("2d").clearRect(x*mapW, y*mapH, tw+1, th+1);
+        this.canvasLayer.canvasHover.getContext("2d").clearRect(0,0,mapW*editor.currentMap.mapWidth, mapH*editor.currentMap.mapHeight);
+        this.canvasLayer.canvasHover.getContext("2d").strokeStyle ="yellow";
+        this.canvasLayer.canvasHover.getContext("2d").lineWidth =3;
+        this.canvasLayer.canvasHover.getContext("2d").strokeRect(x*mapW+2, y*mapH+2, tw-3, th-3);
+        editor.selectedTileGID  = this.csv[y][x];
+        console.log("print gid "+ editor.selectedTileGID);
+        editor.selectedCol = y;
+        editor.selectedRow = x;
+    }
+
+    hoverTile(x, y, canvas, th, tw){
+        var mapH = editor.currentMap.tileHeight;
+        var mapW = editor.currentMap.tileWidth;
+        this.canvasLayer.canvasclicked.getContext("2d").clearRect(0,0,mapW*editor.currentMap.mapWidth, mapH*editor.currentMap.mapHeight);
+        this.canvasLayer.canvasclicked.getContext("2d").strokeStyle ="green";
+        this.canvasLayer.canvasclicked.getContext("2d").lineWidth =3;
+        this.canvasLayer.canvasclicked.getContext("2d").strokeRect(x*mapW+2, y*mapH+2, tw-3, th-3);
+    }    
+
+    eraseTile(x, y, canvas = this.canvasLayer.canvas, th, tw, transaction = false){
+        var mapH = editor.currentMap.tileHeight;
+        var mapW = editor.currentMap.tileWidth;
+        canvas.getContext("2d").clearRect(x*mapW, y*mapH, tw+1, th+1);
+        // if(!transaction){
+
+        //     var llist = editor.currentMap.LayerList;
+        //     var layer = llist.get(llist.size-1);
+        //     var csvTile = layer.canvasLayer.getCSVvalue();
+        //     var a = getKey(editor.currentMap.csvGid.get(editor.cutcopyTileGID));
+        //     var tilesett = getTilesetwithName(a);
+        //     tsH = tilesett.tileHeight;
+        //     tsW = tilesett.tileWidth;
+        //     transactionManager.doAction(new EraseAction(this, x, y, this.csv[y][x], tsW, tsH));
+        // }
         this.csv[y][x] = 0;
-        this.paintTiles()
+        this.paintTiles();
     }
 
     paintTiles(){
@@ -272,15 +354,15 @@ class TiledLayer extends Layer{
         var can = this.canvasLayer.canvas;
         var ctx = can.getContext("2d");
         var TS;
-        for(var i=0; i<loadmapW; i++){
-            for(var j=0; j<loadmapH; j++){
+        for(var i=0; i<loadmapH; i++){
+            for(var j=0; j<loadmapW; j++){
                 if(this.csv[i][j] !=0){
                     var firstgid = editor.currentMap.csvGid.get(this.csv[i][j]);
                     var Tsname = getKey(firstgid);
                     TS = getTilesetwithName(Tsname);
+                    // console.log(this.csv[i][j]);
                     var localID = this.csv[i][j] - firstgid;
                     var loadedImg = new Image();
-                    console.log(TS);
                     loadedImg.src = TS.image.src;
                     ctx.drawImage(loadedImg, TS.tileList[localID].startX, TS.tileList[localID].startY, TS.tileWidth, TS.tileHeight,j*this.tileW, i*this.tileH, TS.tileWidth, TS.tileHeight);
                 }
@@ -288,7 +370,26 @@ class TiledLayer extends Layer{
         }
     }
 }
- 
+function createNewCSV(layer, x, y, time){
+    return new Promise ((resolve) => {
+
+    setTimeout(() => {
+        var newCSV = Array.from(Array((x)), () => Array((y)).fill(0));
+        var oldRows = layer.csv.length;
+        var oldCols = layer.csv[0].length;
+        var rows = (x < oldRows) ? x : oldRows;
+        var cols = (y < oldCols) ? y : oldCols;
+        for(var r=0; r< rows; r++){
+            for(var c=0; c< cols; c++){
+                newCSV[r][c] = layer.csv[r][c];
+            }
+        }  
+        layer.csv = newCSV;
+        resolve(newCSV); 
+    },time); 
+    });
+}
+
 function getKey(val){
     var map = editor.currentMap.selectedTilesetList;
     var b;

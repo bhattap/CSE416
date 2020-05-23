@@ -11,7 +11,6 @@ class Tileset{
    setSrc(filePath){
 	this.src = filePath;
    }
-
 }
 
 class Tile{
@@ -72,7 +71,7 @@ function createSingleTiles(tileSetName, image, tileWidth, tileHeight, spacing){
 		  }
 		}
   }
-;	return tileList;
+	return tileList;
   }
 
 class CollectionTileset extends Tileset{

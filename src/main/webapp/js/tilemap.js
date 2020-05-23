@@ -7,15 +7,34 @@ class Grid{
         this.h = (height*tileH);
         this.canvasW = canvas.width = document.getElementsByClassName("surface tab")[0].offsetWidth;
         this.canvasH = canvas.height = document.getElementsByClassName("surface tab")[0].offsetHeight;
+        if(this.w> this.canvasW){
+            this.canvasW = canvas.width =document.getElementsByClassName("Map")[0].lastElementChild.width;
+        }
+        if(this.h >this.canvasH){
+            this.canvasH = canvas.height =document.getElementsByClassName("Map")[0].lastElementChild.height;
+        }
         this.tileWidth = tileW;
         this.tileHeight = tileH;
         this.show = true;
         this.isDragging = false;
     }
 
-    resize(width, height, tileW, tileH){
-        this.w = canvas.width = (width*tileW);
-        this.h = canvas.height = (height*tileH);
+    resize(x, y, offsetX, offsetY){
+        this.ctx.clearRect(0, 0, this.w, this.w);
+        this.w  = this.tileWidth * x;
+        this.h  = this.tileHeight * y;
+        this.showGrid(offsetX, offsetY);
+    }
+
+    updateZoom(resetGridRatioX, resetGridRatioY){
+    this.grid.width
+        = document.getElementsByClassName("surface tab")[0].offsetWidth*resetGridRatioX;
+    this.grid.height
+        = document.getElementsByClassName("surface tab")[0].offsetHeight*resetGridRatioY;
+    document.getElementsByClassName("editor-container")[0].style.width
+        = resetGridRatioX*100 +"%";
+    document.getElementsByClassName("editor-container")[0].style.height
+        = resetGridRatioY*100 +"%";
     }
  
     showGrid(offsetX=0, offsetY=0){
@@ -62,7 +81,7 @@ class Grid{
     onScrollEvent(){
         var gridCanvas = this.grid;
         if(gridCanvas){
-            gridCanvas.addEventListener('mousewheel', this.zoomScroll);
+            gridCanvas.addEventListener('scroll', this.zoomScroll);
             gridCanvas.addEventListener('mousemove', this.setCenter);
             gridCanvas.style.zIndex = 999;
         }
@@ -70,7 +89,7 @@ class Grid{
     offScrollEvent(){
         var gridCanvas = this.grid;
         if(gridCanvas){
-            gridCanvas.removeEventListener('mousewheel', this.zoomScroll);
+            gridCanvas.removeEventListener('scroll', this.zoomScroll);
             gridCanvas.removeEventListener('mousemove', this.setCenter);
             gridCanvas.style.zIndex = "";
         }
@@ -116,8 +135,9 @@ class Grid{
             target.showGrid(x,y);
             targetLayer.canvasLayer.canvas.style.left = x+"px";
             targetLayer.canvasLayer.canvas.style.top = y+"px";
-            targetLayer.offsetX = parseInt(targetLayer.canvasLayer.canvas.style.left.replace("px", ""));
-            targetLayer.offsetY = parseInt(targetLayer.canvasLayer.canvas.style.top.replace("px", ""));
+            [targetLayer.offsetX, targetLayer.offsetY] = [x, y];
+            // targetLayer.offsetX = parseInt(targetLayer.canvasLayer.canvas.style.left.replace("px", ""));
+            // targetLayer.offsetY = parseInt(targetLayer.canvasLayer.canvas.style.top.replace("px", ""));
         }
     }
     dragEnd(e){
@@ -135,16 +155,51 @@ class TiledCanvas{
         canvas.style.top = offsetY +"px";
         canvas.addEventListener("click", addEvent);
 
-        this.w = canvas.width = (width*tileW);
-        this.h = canvas.height = (height*tileH);
+        let canvasHover = document.createElement("canvas");
+        canvasHover.id = layer.id +"hover";
+        canvasHover.style.position = "position"; 
+        canvasHover.style.left = offsetX+ "px";
+        canvasHover.style.top = offsetY +"px";
+        canvasHover.style.zIndex = -1;
+
+        let canvasclicked = document.createElement("canvas");
+        canvasclicked.id = layer.id +"click";
+        canvasclicked.style.position = "position"; 
+        canvasclicked.style.left = offsetX+ "px";
+        canvasclicked.style.top = offsetY +"px";
+        canvasclicked.style.zIndex = -1;
+
+        this.w = canvas.width = canvasHover.width = canvasclicked.width = (width*tileW);
+        this.h = canvas.height = canvasHover.height = canvasclicked.height = (height*tileH);
         this.canvas = document.getElementsByClassName('Map')[0].appendChild(canvas);
         this.ctx = canvas.getContext("2d");
+        this.canvasHover = document.getElementsByClassName('Map')[0].appendChild(canvasHover);
+        this.ctxHover = canvasHover.getContext("2d");
+        this.canvasclicked = document.getElementsByClassName('Map')[0].appendChild(canvasclicked);
+        this.ctxClicked = canvasclicked.getContext("2d");
     }
+    
+    resize(x, y, tileW, tileH){
+        this.w = this.canvas.width = x * tileW;
+        this.h = this.canvas.height = y * tileH;
+        this.w = this.canvasHover.width = x * tileW;
+        this.h = this.canvasHover.height = y * tileH;
+        this.w = this.canvasclicked.width = x * tileW;
+        this.h = this.canvasclicked.height = y * tileH;
+    }
+
+    // getOffset(){
+    //     var x = parseInt(this.canvas.style.left.replace("px", ""));
+    //     var y = parseInt(this.canvas.style.top.replace("px", ""));
+    //     return [x, y];
+    // }
     hideCanvas(){
         document.getElementById(this.canvas.id).style.display="none";
     }
     showCanvas(layer){
         this.canvas.style.display="block";
+        this.canvasHover.style.display="block";
+        this.canvasclicked.style.display="block";
     }
     getCSVvalue(){
         return editor.currentMap.LayerList.get(editor.currentMap.LayerList.size-1).csv[col][row];
@@ -159,6 +214,7 @@ class TiledCanvas{
         this.canvas.addEventListener("click", zoomEvent);
     }
 }
+
 function addEvent(){
     var current = editor.currentMap;
     var topLayerIndex = current.LayerList.size-1;
@@ -172,7 +228,7 @@ function addEvent(){
        current.LayerList.get(topLayerIndex).eraseTile(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvas, tsH, tsW);
    }
    else{
-    current.LayerList.get(topLayerIndex).fillTiles(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvas);
+        current.LayerList.get(topLayerIndex).fillTiles(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvas);
    }
 }
 function zoomEvent(){
@@ -191,6 +247,28 @@ function zoomEvent(){
    else{
     current.LayerList.get(topLayerIndex).fillTiles(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvas);
    }
+}
+
+function hoverEvent(){
+    var current = editor.currentMap;
+    var topLayerIndex = current.LayerList.size-1;
+    var zoomFeature = editor.zoomFeature;
+    var mousePos = getMousePos(current.LayerList.get(topLayerIndex).canvasLayer.canvasHover, event);
+    row = Math.floor(mousePos.x/(current.tileWidth*zoomFeature.ratioY));
+    col = Math.floor(mousePos.y/(current.tileHeight*zoomFeature.ratioX));
+     current.LayerList.get(topLayerIndex).hoverTile(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvasHover, current.tileHeight, current.tileWidth);
+}
+
+function tileSelectEvent(){
+    var current = editor.currentMap;
+    var topLayerIndex = current.LayerList.size-1;
+    var zoomFeature = editor.zoomFeature;
+    var mousePos = getMousePos(current.LayerList.get(topLayerIndex).canvasLayer.canvasHover, event);
+    row = Math.floor(mousePos.x/(current.tileWidth*zoomFeature.ratioY));
+    col = Math.floor(mousePos.y/(current.tileHeight*zoomFeature.ratioX));
+   var message = 'Mouse position: ' + row  + ',' + col;
+   console.log(message);
+     current.LayerList.get(topLayerIndex).selectTile(row, col, current.LayerList.get(topLayerIndex).canvasLayer.canvasHover, current.tileHeight, current.tileWidth);
 }
 
 class ObjectCanvas{
