@@ -48,7 +48,7 @@ class Editor{
     }
  
     clearWorkspace(){
-     this.resetTilesetList();
+        resetTilesetList();
      var mapNode = document.getElementsByClassName("Map")[0];
      mapNode.innerText ="";
      var gridNode = document.createElement("div");
@@ -230,16 +230,7 @@ function paste(){
     var row = editor.selectedRow;
     var col = editor.selectedCol;
     currentLayer.csv[col][row] = editor.cutcopyTileGID;
-    
-    // var llist = editor.currentMap.LayerList;
-    // var layer = llist.get(llist.size-1);
-    // var csvTile = layer.canvasLayer.getCSVvalue();
-    // var a = getKey(editor.currentMap.csvGid.get(editor.cutcopyTileGID));
-    // var tilesett = getTilesetwithName(a);
-    // tsH = tilesett.tileHeight;
-    // tsW = tilesett.tileWidth;
-
-    // transactionManager.doAction(new PaintAction(currentLayer, row, col, editor.cutcopyTileGID, tsH, tsW));
+    transactionManager.doAction(new PaintAction(currentLayer, row, col, editor.cutcopyTileGID));
     current.LayerList.get(topLayerIndex).canvasLayer.canvasHover.getContext("2d").clearRect(0,0,current.mapWidth*current.tileWidth, current.mapHeight*current.tileHeight);
     current.LayerList.get(topLayerIndex).paintTiles();
 }

@@ -797,6 +797,8 @@ function parseTilesetJson(tileset, newImage){
 }
 
 async function loadtilesetPromise(tilesetNameIter) {
+  editor.resetTilesetList();
+  
   var username = editor.userName;
   var tilesetNames = Array.from(tilesetNameIter.keys());
 
@@ -859,13 +861,11 @@ function convertCSVToArray(csv, csvArray, size){
     let rowArray = new Array(size);
     // each row in rowArray
     // 1. turns into String (like "0,0,0,0,0,0,0")
-    if(rowText != ""){
-      rowArray = rowText.split(',');
-      // 2. turns into integers
-      rowArray = rowArray.map(num => parseInt(num, 10));
-      // 3. push to the return variable
-      result.push(rowArray);
-    }
+    rowArray = rowText.split(',');
+    // 2. turns into integers
+    rowArray = rowArray.map(num => parseInt(num, 10));
+    // 3. push to the return variable
+    result.push(rowArray);
   });
   return result;
 }

@@ -45,37 +45,36 @@ class Transaction{
 }
 
 class PaintAction {
-    constructor (layer, x, y, csvGid, tilesetW, tilesetH) {
+    constructor (layer, x, y, csvGid) {
         this.layer = layer;
         this.x = x;
         this.y = y;
         this.csvGid = csvGid;
-        this.tilesetW = tilesetW;
-        this.tilesetH = tilesetH;
     }
     undo() {
-        getTWTH();
-        this.layer.eraseTile(this.x, this.y, this.layer.canvasLayer.canvas, tsW, tsH, true);}
+        var mapH = editor.currentMap.tileHeight;
+        var mapW = editor.currentMap.tileWidth;
+        this.layer.eraseTile(this.x, this.y, this.layer.canvasLayer.canvas, mapH, mapW, true);
+    }
     redo() {
         this.layer.fillTiles(this.x, this.y, this.layer.canvasLayer.canvas, true, this.csvGid);
     }
 }
 
 class EraseAction {
-    constructor (layer, x, y, csvGid, tilesetW, tilesetH) {
+    constructor (layer, x, y, csvGid) {
         this.layer = layer;
         this.x = x;
         this.y = y;
         this.csvGid = csvGid;
-        this.tilesetW = tilesetW;
-        this.tilesetH = tilesetH;
     }
     undo(){
         this.layer.fillTiles(this.x, this.y, this.layer.canvasLayer.canvas, true, this.csvGid);
     }
     redo(){
-        getTWTH();
-        this.layer.eraseTile(this.x, this.y, this.layer.canvasLayer.canvas, tsW, tsH, true);
+        var mapH = editor.currentMap.tileHeight;
+        var mapW = editor.currentMap.tileWidth;
+        this.layer.eraseTile(this.x, this.y, this.layer.canvasLayer.canvas, mapH, mapW, true);
     }
 }
 
@@ -98,34 +97,6 @@ class ResizeAction {
     }
 }
 
-class CreateLayerAction{
-    constructor(layer){
-        this.layer = layer;
-    }
-    undo(){
-        removeLayer(this.layer.id, true);
-    }
-    redo(){
-        var map = editor.currentMap;
-        map.updateLayerList(this.layer, true);
-        showList(map.LayerList);
-    }
-}
-
-class DeleteLayerAction{
-    constructor(layer){
-        this.layer = layer;
-    }
-
-    undo(){
-        var map = editor.currentMap;
-        map.updateLayerList(this.layer, true);
-        showList(map.LayerList);
-    }
-    redo(){
-        removeLayer(this.layer.id, true);
-    }
-}
 function setCSVForAllLayers(csv){
     var layers = editor.currentMap.LayerList;
     for (let [layerId, layer] of layers) {

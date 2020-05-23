@@ -43,20 +43,15 @@ class TiledMap{
     addLayer(layerType, name){
         var newLayer;
         var id = idL + 1;
+        console.log("idL "+ idL + "id: " +id);
         if (layerType === "tileLayer"){ 
-            newLayer = new TiledLayer(id, name, this.mapWidth, this.mapHeight, this.id, this.tileWidth, this.tileHeight);
+          newLayer = new TiledLayer(id, name, this.mapWidth, this.mapHeight, this.id, this.tileWidth, this.tileHeight);
+          newLayer.order = editor.currentMap.LayerList.size;
+         
         } else {
-            newLayer = new ObjectLayer(id, name, this.mapWidth, this.mapHeight);
+          newLayer = new ObjectLayer(id, name, this.mapWidth, this.mapHeight);
         }
-        newLayer.order = editor.currentMap.LayerList.size;
-        this.updateLayerList(newLayer);
-    }
-
-    updateLayerList(newLayer, transaction = false){
-        if(!transaction){
-            transactionManager.doAction(new CreateLayerAction(newLayer.duplicateLayer(newLayer.id)));
-            // transactionManager.doAction(new CreateLayerAction(newLayer.duplicateLayer(newLayer.id)));
-        }
+        // newLayer.canvas.style.zIndex = 0;
         this.LayerList.set(this.LayerList.size, newLayer);
         idL = idL + 1;
     }
@@ -116,22 +111,18 @@ class TiledMap{
             alert("Cannot upper layer");
         }
     }
-
 }
 
-function createNewLayer(layerType, name) { 
+function createNewLayer(layerType, name) {
    var currentMap = editor.currentMap;
    currentMap.addLayer(layerType, name);
-   var layers = currentMap.LayerList;
+    var layers = currentMap.LayerList;
     showList(layers);
 }
 
-function removeLayer(targetId = editor.selectedLayerId, transaction = false){
+function removeLayer(){
+    var targetId = editor.selectedLayerId;
     if(targetId != null){
-        if(!transaction){
-            var targetlayer = editor.currentMap.LayerList.get(targetId);
-            transactionManager.doAction(new DeleteLayerAction(targetlayer.duplicateLayer(targetlayer.id)));
-        }
         editor.currentMap.removeLayer(targetId);
         showList(editor.currentMap.LayerList);
     } else {
@@ -154,7 +145,6 @@ function showList(Llist){ // Llist == layer lists in current Map
     var topLayerIndex = Llist.size-1;
     for(var i=topLayerIndex; i>-1; i--){
         var layer = Llist.get(i);
-        console.log(layer);
         var li = document.createElement("li");
         li.id = layer.order;
         var inputValue = layer.name;
@@ -255,11 +245,6 @@ class TiledLayer extends Layer{
         this.offsetY = offsetY;
     }
 
-    duplicateLayer(id){
-        var mapName = editor.currentMap.id;
-        return new TiledLayer(id, this.name, this.mapWidth, this.mapHeight, mapName, this.tileWidth, this.tileHeight, this.offsetX, this.offsetY);
-    }
-
     async updateResize(x,y, csvs){
         csvs['oldCSVs'].push(this.csv);
         createNewCSV(this, x, y, x*y).then(newCSV => {
@@ -291,16 +276,7 @@ class TiledLayer extends Layer{
             var ggid = Number(map.selectedTilesetList.get(selectedtileset.name));
             csvGid = index + ggid;
             map.updateCSVGid(csvGid, ggid);
-            // var llist = editor.currentMap.LayerList;
-            // var layer = llist.get(llist.size-1);
-            // var csvTile = layer.canvasLayer.getCSVvalue();
-            // var a = getKey(editor.currentMap.csvGid.get(editor.cutcopyTileGID));
-            // var tilesett = getTilesetwithName(a);
-            // tsH = tilesett.tileHeight;
-            // tsW = tilesett.tileWidth;
-
-    // transactionManager.doAction(new PaintAction(currentLayer, row, col, editor.cutcopyTileGID, tsH, tsW));
-   
+            transactionManager.doAction(new PaintAction(this, x, y, csvGid));
         }
         this.csv[y][x] = csvGid;
 
@@ -333,17 +309,9 @@ class TiledLayer extends Layer{
         var mapH = editor.currentMap.tileHeight;
         var mapW = editor.currentMap.tileWidth;
         canvas.getContext("2d").clearRect(x*mapW, y*mapH, tw+1, th+1);
-        // if(!transaction){
-
-        //     var llist = editor.currentMap.LayerList;
-        //     var layer = llist.get(llist.size-1);
-        //     var csvTile = layer.canvasLayer.getCSVvalue();
-        //     var a = getKey(editor.currentMap.csvGid.get(editor.cutcopyTileGID));
-        //     var tilesett = getTilesetwithName(a);
-        //     tsH = tilesett.tileHeight;
-        //     tsW = tilesett.tileWidth;
-        //     transactionManager.doAction(new EraseAction(this, x, y, this.csv[y][x], tsW, tsH));
-        // }
+        if(!transaction){
+            transactionManager.doAction(new EraseAction(this, x, y, this.csv[y][x]));
+        }
         this.csv[y][x] = 0;
         this.paintTiles();
     }
